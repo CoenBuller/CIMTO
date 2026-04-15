@@ -7,7 +7,7 @@ from os import mkdir
 from pathlib import Path
 from PIL import Image
 from skimage import draw
-from CIMTO.ReconstructionAlgorithms import SIRT, FBP
+from ReconstructionAlgorithms import SIRT, FBP
 
 def sinogram(phantom: np.ndarray, 
             n_detectors: int, 
