@@ -2,8 +2,8 @@ import astra
 import numpy as np
 
 
-def SIRT(vol_geom: np.ndarray,
-         proj_geom: np.ndarray,
+def SIRT(vol_geom: dict[str, dict],
+         proj_geom: dict,
          sinogram: np.ndarray,
          projector_id: int,
          vol_data: np.ndarray | float = 0,
