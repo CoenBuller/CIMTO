@@ -6,6 +6,9 @@ def SIRT(vol_geom: np.ndarray,
          proj_geom: np.ndarray,
          sinogram: np.ndarray,
          projector_id: int,
+
+         min_constraint: int = 0,
+         max_constraint: int = 255,
          vol_data= 0,
          iters: int = 200,
          mask=None,
@@ -25,7 +28,7 @@ def SIRT(vol_geom: np.ndarray,
     if mask is None:
         mask = np.ones((sinogram.shape[1], sinogram.shape[1]))        
     mask_id = astra.data2d.create('-vol', vol_geom, mask)
-    alg_cfg['option'] = {
+    alg_cfg['option'] = { #ignore
         'ReconstructionMaskId': mask_id,
         'MaxConstraint': max_constraint,
         'MinConstraint': min_constraint
