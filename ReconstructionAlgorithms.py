@@ -60,17 +60,16 @@ def SIRT(vol_geom: dict[str, dict],
     alg_cfg["ProjectorId"] = projector_id
     alg_cfg["ProjectionDataId"] = sino_id
     alg_cfg["ReconstructionDataId"] = rec_id
-    alg_cfg["MinConstraint"] = min_constraint
-    alg_cfg["MaxConstraint"] = max_constraint
 
-    mask_id = None
-    if mask is not None:
-        assert mask.shape == sinogram.shape, (
-            f"Mask shape {mask.shape} must match sinogram shape {sinogram.shape}"
-        )
-        mask_id = astra.data2d.create("-sino", proj_geom, data=mask)
-        alg_cfg["SinogramMaskId"] = mask_id
 
+    if mask is None:
+        mask = np.ones((sinogram.shape[1], sinogram.shape[1]))        
+    mask_id = astra.data2d.create('-vol', vol_geom, mask)
+    alg_cfg['option'] = {
+        'ReconstructionMaskId': mask_id,
+        'MaxConstraint': max_constraint,
+        'MinConstraint': min_constraint
+    }
     # Run
     algorithm_id = astra.algorithm.create(alg_cfg)
     astra.algorithm.run(algorithm_id, iters)
