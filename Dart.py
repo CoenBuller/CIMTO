@@ -2,11 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import astra
+import time
+
+
 from tqdm import tqdm
 from Sinograms import Sinogram, ResidualSinogram
 from ReconstructionAlgorithms import SIRT
 from RoundTo import RoundTo
 from FreePixels import ChooseFreePixels
+from EdgeDetector import EdgeDetection
 
 
 def DART(phantom: np.ndarray,
@@ -36,6 +40,7 @@ def DART(phantom: np.ndarray,
                                                                         )
 
     # Initial reconstruction
+    time0 = time.time()
     reconstruction = SIRT(
                           sino_id=sino_id,
                           vol_geom=vol_geom, 
@@ -50,8 +55,10 @@ def DART(phantom: np.ndarray,
     reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
     free_mask = ChooseFreePixels(reconstruction, p)
 
-    print('\n', "="*75)
+    print('\n')
+    print("="*75)
     print("Initial reconstruction has been made. Will now continue with the DART loop")
+    print(f"Initial reconstruction took {(time.time() - time0):.3f}s, for {init_sirt_iters} iterations")
     print("="*75, '\n')
     
     with tqdm(total=dart_iters, desc="DART", unit="iter") as pbar:
@@ -109,7 +116,7 @@ def DART(phantom: np.ndarray,
     return reconstruction
 
 if __name__ == "__main__":
-    phantom_path = os.path.join("Test_phantoms", "multiple_shapes_and_graylevels.npz")
+    phantom_path = os.path.join("Test_phantoms", "Porouse_with_different_density.npz")
     phantom_arrays = np.load(phantom_path)
     lst = phantom_arrays.files
     item = lst[0]
@@ -129,19 +136,28 @@ if __name__ == "__main__":
 
                           vol_data=0,
                           use_gpu=False,
-                          stagnated_iteraions=5,)
+                          stagnated_iteraions=2,)
 
 
     print('\n',"="*75)
     print(f"Final K: {np.sum(reconstruction != phantom)}")
     print("="*75)
 
-    
-    fig, ax = plt.subplots(1, 2)
-    ax[0].imshow(phantom)
-    ax[0].set_title("Original phantom")
-    ax[1].imshow(reconstruction)
-    ax[1].set_title("Reconstructed phantom")
+    edge = EdgeDetection(reconstruction)
+    not_in_edge = np.zeros_like(edge)
+    not_in_edge[((phantom != reconstruction) not in edge)] = 1
+    fig, ax = plt.subplots(2, 3)
+    ax[0,0].imshow(phantom)
+    ax[0,0].set_title("Original phantom")
+    ax[0,1].imshow(reconstruction)
+    ax[0,1].set_title("Reconstructed phantom")
+    ax[1,0].imshow(phantom != reconstruction)
+    ax[1,0].set_title("Difference phantom")
+    ax[1,1].imshow(edge)
+    ax[1,1].set_title("Edges")
+    ax[1,2].imshow(not_in_edge)
+    ax[1,2].set_title(f"All the pixel values that are wrong, that are not part of the edge. N={np.sum(not_in_edge)}")
+    plt.savefig("DART_reconstruction")
     plt.show()
 
 
