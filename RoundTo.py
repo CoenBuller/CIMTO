@@ -1,4 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+from ReconstructionAlgorithms import SIRT
+from Sinograms import sinogram
 
 def RoundTo(phantom: np.ndarray, graylevels: np.ndarray) -> np.ndarray:
     """
@@ -19,14 +24,38 @@ def RoundTo(phantom: np.ndarray, graylevels: np.ndarray) -> np.ndarray:
         containing the pixels which are rounded to the nearest gray level. 
     """
 
-    phantom_copy = phantom.copy()
-    graylevels_dict = {}
-    for i, graylevel in enumerate(graylevels):
-        graylevels_dict[i] = graylevel
+    diffs = np.abs(phantom[..., np.newaxis] - graylevels)  # shape (H, W, G)
+    best_idx = np.argmin(diffs, axis=-1)                   # shape (H, W)
+    return graylevels[best_idx]
 
-    for i in range(phantom_copy.shape[0]):
-        for j in range(phantom_copy.shape[1]):
-            best_idx = np.argmin(np.abs(graylevels - phantom[i, j]))
-            phantom_copy[i, j] = graylevels_dict[best_idx]
 
-    return phantom_copy
+if __name__ == "__main__":
+    phantom_path = os.path.join("Test_phantoms", "multiple_shapes_and_graylevels.npz")
+    phantom_arrays = np.load(phantom_path)
+    lst = phantom_arrays.files
+    item = lst[0]
+    phantom = phantom_arrays[item]
+
+    projector_id, sino_id, sinogram_img, vol_geom, proj_geom = sinogram(
+        phantom=phantom,
+        n_detectors=512,
+        angles=np.linspace(0, np.pi, 180),
+        detector_spacing=1
+        )
+    
+    _, reconstruction= SIRT(vol_data=0,
+                          vol_geom=vol_geom,
+                          projector_id=projector_id,
+                          proj_geom=proj_geom,
+                          sinogram=sinogram_img,
+                          min_constraint=0,
+                          max_constraint=255)
+    
+    rounded_recon = RoundTo(reconstruction, graylevels=np.unique(phantom))
+
+    fig, ax = plt.subplots(1, 2)
+    ax[0].imshow(phantom)
+    ax[1].imshow(rounded_recon)
+    ax[0].set_title("Original phantom")
+    ax[1].set_title("Rounded and reconstructed phantom")
+    plt.show()

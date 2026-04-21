@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import astra
 from tqdm import tqdm
-
 from Sinograms import sinogram
 from ReconstructionAlgorithms import SIRT
 from RoundTo import RoundTo
@@ -30,12 +30,14 @@ def DART(phantom: np.ndarray,
         angles=angles,
         detector_spacing=detector_spacing
     )
+    astra.data2d.delete(sino_id)
 
-    reconstruction_id, reconstruction = SIRT(
+
+    reconstruction = SIRT(
         sinogram=sinogram_img,
-        vol_geom=vol_geom,
-        vol_data=vol_data,
-        proj_geom=proj_geom,
+        vol_geom=vol_geom, 
+        vol_data=vol_data, 
+        proj_geom=proj_geom, 
         projector_id=projector_id,
         iters=iters,
         min_constraint=np.min(graylevels),
@@ -43,9 +45,10 @@ def DART(phantom: np.ndarray,
         use_gpu=use_gpu
     )
 
-    reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
+    reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels) # type: ignore
     free_mask = ChooseFreePixels(reconstruction, p)
 
+    
     with tqdm(total=dart_iters, desc="DART", unit="iter") as pbar:
 
         K_error = np.sum((reconstruction != phantom))
@@ -54,7 +57,7 @@ def DART(phantom: np.ndarray,
 
         for i in range(dart_iters - 1):
 
-            reconstruction_id, reconstruction = SIRT(
+            reconstruction = SIRT(
                 sinogram=sinogram_img,
                 mask=free_mask,
                 vol_geom=vol_geom,

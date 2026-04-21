@@ -16,7 +16,7 @@ def sinogram(phantom: np.ndarray,
             beam_type: str='parallel',
             intensity_scale: int | None=None, 
             save_dir: str | None=None, 
-            n_projections: int | None=None,
+            n_projections: int = 0,
             use_gpu: bool=False):
         
     """
@@ -71,7 +71,7 @@ def sinogram(phantom: np.ndarray,
             proj_geom : np.ndarray
                 Projection geometry created with the given beam parameters.
     """
-
+    sinogram_noisy = None
     width, height = phantom.shape
     vol_geom = astra.creators.create_vol_geom([width,height])
     phantom_id = astra.data2d.create('-vol', vol_geom, data=phantom)
@@ -111,8 +111,13 @@ def sinogram(phantom: np.ndarray,
         for i in range(n_projections):
             Image.fromarray(proj_for_img[i]).save(save_dir+f'proj_{i}.png')
     
+    astra.data2d.delete(phantom_id)
+    astra.projector.delete(proj_id)
+
     if intensity_scale is not None:
+        assert sinogram_noisy is not None, "The noisy sinogram is still None but should be a np.ndarray."
         return proj_id, sino_id, sinogram_noisy, vol_geom, proj_geom
+    
 
     return proj_id, sino_id, sinogram, vol_geom, proj_geom
 
