@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import astra
 from tqdm import tqdm
-from Sinograms import sinogram
+from Sinograms import Sinogram, ResidualSinogram
 from ReconstructionAlgorithms import SIRT
 from RoundTo import RoundTo
 from FreePixels import ChooseFreePixels
@@ -23,36 +23,36 @@ def DART(phantom: np.ndarray,
 
          vol_data: np.ndarray | float = 0,
          use_gpu: bool = False,
-         diagnostics: bool = False,
          stagnated_iteraions: int = 3,
 
-) -> np.ndarray:
+        ) -> np.ndarray:
 
-    projector_id, sino_id, sinogram_img, vol_geom, proj_geom = sinogram(
-        phantom=phantom,
-        n_detectors=n_detectors,
-        angles=angles,
-        detector_spacing=detector_spacing,
-        intensity_scale=intensity_scale,
-    )
+    projector_id, sino_id, sinogram_img, vol_geom, proj_geom = Sinogram(
+                                                                        phantom=phantom,
+                                                                        n_detectors=n_detectors,
+                                                                        angles=angles,
+                                                                        detector_spacing=detector_spacing,
+                                                                        intensity_scale=intensity_scale,
+                                                                        )
 
+    # Initial reconstruction
     reconstruction = SIRT(
-        sino_id=sino_id,
-        vol_geom=vol_geom, 
-        vol_data=vol_data, 
-        projector_id=projector_id,
-        iters=init_sirt_iters,
-        min_constraint=np.min(graylevels),
-        max_constraint=np.max(graylevels),
-        use_gpu=use_gpu
-    )
+                          sino_id=sino_id,
+                          vol_geom=vol_geom, 
+                          vol_data=vol_data, 
+                          projector_id=projector_id,
+                          iters=init_sirt_iters,
+                          min_constraint=np.min(graylevels),
+                          max_constraint=np.max(graylevels),
+                          use_gpu=use_gpu
+                          )
 
     reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
     free_mask = ChooseFreePixels(reconstruction, p)
 
-    print("="*75)
+    print('\n', "="*75)
     print("Initial reconstruction has been made. Will now continue with the DART loop")
-    print("="*75)
+    print("="*75, '\n')
     
     with tqdm(total=dart_iters, desc="DART", unit="iter") as pbar:
 
@@ -66,17 +66,15 @@ def DART(phantom: np.ndarray,
         K_error_prev = K_error
         for i in range(dart_iters - 1):
 
-            fixed_only = reconstruction.copy()
-            fixed_only[free_mask] = 0
-
-            fixed_phantom_id = astra.data2d.create('-vol', vol_geom, fixed_only)
-            fixed_sino_id, fixed_sino = astra.creators.create_sino(fixed_phantom_id, projector_id)
-            astra.data2d.delete(fixed_phantom_id)   # ← delete immediately after use
-
-            residual_sino = sinogram_img - astra.data2d.get(fixed_sino_id)
-            residual_sino_id = astra.data2d.create('-sino', proj_geom, residual_sino)
-            astra.data2d.delete(fixed_sino_id)   
-
+            # Calculate residual sinogram b_res = b_0 - A(x_fixed)
+            residual_sino_id = ResidualSinogram(reconstruction=reconstruction,
+                                                free_mask=free_mask,
+                                                sinogram_img=sinogram_img,
+                                                projector_id=projector_id,
+                                                vol_geom=vol_geom, 
+                                                projector_geom=proj_geom)
+            
+            # Solve b_res = A(x_free)
             reconstruction = SIRT(
                 sino_id=residual_sino_id,
                 mask=free_mask,
@@ -88,27 +86,13 @@ def DART(phantom: np.ndarray,
                 max_constraint=np.max(graylevels),
                 use_gpu=use_gpu
             )
-
-            if diagnostics:
-                n_free  = np.sum(free_mask)
-                n_fixed = free_mask.size - n_free
-                error_in_free  = np.sum((reconstruction != phantom)[free_mask])
-                error_in_fixed = np.sum((reconstruction != phantom)[~free_mask])
-                print(f"\nIter {i}")
-                print(f"  Free pixels : {n_free}  | errors in free  (post-SIRT, pre-round): {error_in_free}")
-                print(f"  Fixed pixels: {n_fixed} | errors in fixed (post-SIRT, pre-round): {error_in_fixed}")
-
+            
+            # Segment pixel values of reconstruction and determine new set of free pixels
             reconstruction = RoundTo(reconstruction, graylevels)
-
-            if diagnostics:
-                error_in_free_post  = np.sum((reconstruction != phantom)[free_mask])
-                error_in_fixed_post = np.sum((reconstruction != phantom)[~free_mask])
-                print(f"  errors in free  (post-round): {error_in_free_post}")
-                print(f"  errors in fixed (post-round): {error_in_fixed_post}")
-
             free_mask = ChooseFreePixels(reconstruction, p)
 
-            K_error = np.sum((reconstruction != phantom))
+            # Some metrics
+            K_error = np.sum((reconstruction != phantom)) # Number of wrong pixels
             abs_error = np.mean(abs(reconstruction - phantom))
             pbar.set_postfix(K=f"{K_error:.2f}",
                              abs_error=f"{abs_error}")
@@ -116,7 +100,7 @@ def DART(phantom: np.ndarray,
 
             if K_error == K_error_prev:
                 stagnated += 1
-                if stagnated == stagnated_iteraions:
+                if stagnated == stagnated_iteraions: # If stagnated for "stagnated_iterations" stop DART loop
                     break
             
             K_error_prev = K_error
@@ -133,11 +117,11 @@ if __name__ == "__main__":
 
     reconstruction = DART(phantom=phantom,
                           graylevels=np.unique(phantom),
-                          p=0.01,
+                          p=0.1,
                           dart_iters=20,
 
-                          sirt_iters=5,
-                          init_sirt_iters=50,
+                          sirt_iters=20,
+                          init_sirt_iters=200,
 
                           angles=np.linspace(0, np.pi, 180),
                           detector_spacing=1,
@@ -145,11 +129,11 @@ if __name__ == "__main__":
 
                           vol_data=0,
                           use_gpu=False,
-                          diagnostics=False)
+                          stagnated_iteraions=5,)
 
 
-    print("="*75)
-    print(f"Final MAE: {np.sum(reconstruction != phantom)}")
+    print('\n',"="*75)
+    print(f"Final K: {np.sum(reconstruction != phantom)}")
     print("="*75)
 
     

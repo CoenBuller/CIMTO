@@ -4,12 +4,11 @@ import matplotlib.pyplot as plt
 
 from os.path import isdir
 from os import mkdir
-from pathlib import Path
 from PIL import Image
 from skimage import draw
 from ReconstructionAlgorithms import SIRT, FBP
 
-def sinogram(phantom: np.ndarray, 
+def Sinogram(phantom: np.ndarray, 
             n_detectors: int, 
             angles: np.ndarray, 
             detector_spacing: int, 
@@ -121,6 +120,20 @@ def sinogram(phantom: np.ndarray,
     return proj_id, sino_id, sinogram, vol_geom, proj_geom
 
 
+def ResidualSinogram(reconstruction: np.ndarray, free_mask: np.ndarray, sinogram_img: np.ndarray, projector_id: int, vol_geom: dict[str, dict], projector_geom: dict[str, dict]) -> int:
+    fixed_only = reconstruction.copy()
+    fixed_only[free_mask] = 0
+
+    fixed_phantom_id = astra.data2d.create('-vol', vol_geom, fixed_only)
+    fixed_sino_id, fixed_sino = astra.creators.create_sino(fixed_phantom_id, projector_id)
+    astra.data2d.delete(fixed_phantom_id)  
+
+    residual_sino = sinogram_img - astra.data2d.get(fixed_sino_id)
+    residual_sino_id = astra.data2d.create('-sino', projector_geom, residual_sino)
+    astra.data2d.delete(fixed_sino_id)  
+
+    return residual_sino_id 
+
 if __name__ == "__main__":
 
 
@@ -155,22 +168,28 @@ if __name__ == "__main__":
 
 
 
-    proj_id, sino_id, sinogram_img, volume_geom, projection_geom = sinogram(phantom=clippedSmooth,
+    proj_id, sino_id, sinogram_img, volume_geom, projection_geom = Sinogram(
+                                                                            phantom=clippedSmooth,
                                                                             n_detectors=512,
                                                                             angles=np.linspace(0, np.pi, 180),
-                                                                            detector_spacing=1)
+                                                                            detector_spacing=1
+                                                                            )
     
-    rec_id, sirt_reconstruction = SIRT(vol_geom=volume_geom, 
-                                      sino_id=sino_id,
-                                      projector_id=proj_id,
-                                      vol_data=0,
-                                      iters=200)
+    rec_id, sirt_reconstruction = SIRT(
+                                       vol_geom=volume_geom, 
+                                       sino_id=sino_id,
+                                       projector_id=proj_id,
+                                       vol_data=0,
+                                       iters=200
+                                       )
     
-    rec_id, fbp_reconstruction = FBP(vol_geom=volume_geom,
+    rec_id, fbp_reconstruction = FBP(
+                                     vol_geom=volume_geom,
                                      proj_geom=projection_geom,
                                      sinogram=sinogram_img,
                                      sino_id=sino_id,
-                                     use_gpu=False)
+                                     use_gpu=False
+                                     )
     
     fig, ax = plt.subplots(nrows=1, ncols=4)
     ax[0].imshow(clippedSmooth, cmap='gray')

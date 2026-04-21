@@ -11,3 +11,13 @@ Otsu-Segmentation:
     - Also possibly use another method for the segmentation. In the reconstruction we can see that DART has the tendency to create soft borders between different grayscale values. This can be helped with a different segmentation method
     where we actively look to identify those moments and eleviate. For example, if there are pixel values where it creates a sort of layering effect where each layer has a lower grayscale value then the value before we can 
     possibly quantify it that we prefer a hard border at those places
+
+Multi-Resolution DART Paper:
+    - This paper introduces a new method of solving the image. At first the they reduce the resolution of the image and reconstruct it using lower resolution. If a stopping criteria is met, the distance between 3 consecutive reconstructions
+    didn't change more than a certain threshold, the resolution  is increased and the entire process continues. The increase in resolution goes on until you've reached the target resolution.
+
+    - In the discussion they do tell us that they halve the pixel size each time. This could potentially be done in a better manner. Another thing they mentioned is that the initial poxel size has a larger potential for fast convergence.
+    However this is only true when the smallest charachteristics are still larger than the largest pixel size. There is room for a potential improvement
+
+Deep-Learning with DART Papers:
+    - Still need to select and find them

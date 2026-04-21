@@ -2,8 +2,6 @@ import astra
 import numpy as np
 from typing import Any
 
-
-
 def SIRT(sino_id: int,
          vol_geom: dict[str, dict],
          projector_id: int,
@@ -42,8 +40,7 @@ def SIRT(sino_id: int,
     # Clean up ASTRA objects
     astra.algorithm.delete(algorithm_id)
     astra.data2d.delete(rec_id)      
-    if mask_id is not None:
-        astra.data2d.delete(mask_id)
+    astra.data2d.delete(mask_id)
 
     return reconstruction_img
 

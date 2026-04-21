@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 from ReconstructionAlgorithms import SIRT
-from Sinograms import sinogram
+from Sinograms import Sinogram
 
 def RoundTo(phantom: np.ndarray, graylevels: np.ndarray) -> np.ndarray:
     """
@@ -36,20 +36,21 @@ if __name__ == "__main__":
     item = lst[0]
     phantom = phantom_arrays[item]
 
-    projector_id, sino_id, sinogram_img, vol_geom, proj_geom = sinogram(
+    projector_id, sino_id, sinogram_img, vol_geom, proj_geom = Sinogram(
         phantom=phantom,
         n_detectors=512,
         angles=np.linspace(0, np.pi, 180),
         detector_spacing=1
         )
     
-    _, reconstruction= SIRT(vol_data=0,
-                          vol_geom=vol_geom,
-                          projector_id=projector_id,
-                          proj_geom=proj_geom,
-                          sinogram=sinogram_img,
-                          min_constraint=0,
-                          max_constraint=255)
+    reconstruction= SIRT(
+                            vol_data=0,
+                            vol_geom=vol_geom,
+                            projector_id=projector_id,
+                            sino_id=sino_id,
+                            min_constraint=0,
+                            max_constraint=255
+                            )
     
     rounded_recon = RoundTo(reconstruction, graylevels=np.unique(phantom))
 
