@@ -4,13 +4,14 @@ from typing import Any
 
 
 
-def SIRT(vol_geom: dict[str, dict],
-         proj_geom: dict[str, dict],
-         sinogram: np.ndarray,
+def SIRT(sino_id: int,
+         vol_geom: dict[str, dict],
          projector_id: int,
-
+        
+         img_shape: tuple[int, int] = (512, 512),
          min_constraint: int = 0,
          max_constraint: int = 255,
+
          vol_data: float | np.ndarray = 0,
          iters: int = 200,
          mask= None,
@@ -18,9 +19,7 @@ def SIRT(vol_geom: dict[str, dict],
 
     rec_type = "SIRT_CUDA" if use_gpu else "SIRT"
 
-    sino_id = astra.data2d.create("-sino", proj_geom, data=sinogram)
     rec_id  = astra.data2d.create("-vol",  vol_geom,  data=vol_data)
-
     alg_cfg: dict[str, Any] = astra.astra_dict(rec_type)
     alg_cfg["ProjectorId"] = projector_id 
     alg_cfg["ProjectionDataId"] = sino_id
@@ -28,7 +27,7 @@ def SIRT(vol_geom: dict[str, dict],
 
 
     if mask is None:
-        mask = np.ones((sinogram.shape[1], sinogram.shape[1]))        
+        mask = np.ones(img_shape)        
     mask_id = astra.data2d.create('-vol', vol_geom, mask)
     alg_cfg['option'] = {
         'ReconstructionMaskId': mask_id,
@@ -42,7 +41,6 @@ def SIRT(vol_geom: dict[str, dict],
 
     # Clean up ASTRA objects
     astra.algorithm.delete(algorithm_id)
-    astra.data2d.delete(sino_id)
     astra.data2d.delete(rec_id)      
     if mask_id is not None:
         astra.data2d.delete(mask_id)

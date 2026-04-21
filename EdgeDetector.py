@@ -1,5 +1,10 @@
 import numpy as np
-import scipy as sp
+import os
+
+from scipy.ndimage import maximum_filter, minimum_filter
+
+import time
+import matplotlib.pyplot as plt
 
 def EdgeDetection(phantom: np.ndarray) -> np.ndarray:
     """
@@ -16,8 +21,25 @@ def EdgeDetection(phantom: np.ndarray) -> np.ndarray:
         a mask that contains the edge
     """
 
-    kernel = np.ones((3, 3))
-    output = sp.signal.convolve(in1=phantom, in2=kernel, mode='same') / 9
-    output = np.round(output, decimals=3)
-    mask = (output != phantom)
-    return mask
+    max_f = maximum_filter(phantom, size=3)
+    min_f = minimum_filter(phantom, size=3)
+
+    return max_f != min_f
+
+if __name__ == "__main__":
+    phantom_path = os.path.join("Test_phantoms", "multiple_shapes_and_graylevels.npz")
+    phantom_arrays = np.load(phantom_path)
+    lst = phantom_arrays.files
+    item = lst[0]
+    phantom = phantom_arrays[item]
+
+    time0 = time.time()
+    edges = EdgeDetection(phantom=phantom)
+    print(f" Edge detection took {(time.time() - time0):.3f}s")
+
+    fig, ax = plt.subplots(1, 2)
+    ax[0].imshow(phantom)
+    ax[1].imshow(edges)
+    ax[0].set_title("Originall phantom")
+    ax[1].set_title("Edges")
+    plt.show()

@@ -112,7 +112,6 @@ def sinogram(phantom: np.ndarray,
             Image.fromarray(proj_for_img[i]).save(save_dir+f'proj_{i}.png')
     
     astra.data2d.delete(phantom_id)
-    astra.projector.delete(proj_id)
 
     if intensity_scale is not None:
         assert sinogram_noisy is not None, "The noisy sinogram is still None but should be a np.ndarray."
@@ -162,8 +161,7 @@ if __name__ == "__main__":
                                                                             detector_spacing=1)
     
     rec_id, sirt_reconstruction = SIRT(vol_geom=volume_geom, 
-                                      proj_geom=projection_geom,
-                                      sinogram=sinogram_img,
+                                      sino_id=sino_id,
                                       projector_id=proj_id,
                                       vol_data=0,
                                       iters=200)
