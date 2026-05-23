@@ -1,7 +1,113 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import os
+
 from scipy.ndimage import gaussian_filter1d
 from skimage import draw
+from numpy.typing import NDArray
+from Config import phantomConfig
 
+
+
+def PlotPhantom(img: NDArray) -> None:
+    plt.imshow(img, cmap='gray')
+    plt.axis("off")
+    plt.show()
+
+
+
+def Kite(cfg: phantomConfig, d_height: float=0.3, d_width: float=0.6, rotate: float=0.0, plot: bool=False, save: bool=False) -> NDArray:
+
+    """Create a kite shaped phantom""" 
+
+    img = np.zeros(cfg.img_shape)
+
+    diamond_x, diamond_y = [int(d_height*256), 256, int((2-d_height)*256), 256], [256, int(d_width*256), 256, int((2-d_width)*256)]
+    rr, cc = draw.polygon(diamond_x, diamond_y, shape=img.shape)
+    img[rr, cc] = 1
+
+    img = img * cfg.max_gray
+    img[img > 255] = cfg.max_gray
+    img[img < 0] = cfg.min_gray
+    img = img.astype(np.int16)
+
+    os.makedirs(name=cfg.save_dir, exist_ok=True)
+    if plot:
+        PlotPhantom(img=img)
+    if save:
+        p = os.path.join(cfg.save_dir, "kite.npy")
+        np.save(file=p, arr=img)
+
+    return img
+
+
+def Circle(cfg: phantomConfig, r: int, c: tuple[int, int], plot: bool=False, save: bool=False) -> NDArray:
+
+    """Create a circle shaped phantom""" 
+
+    img = np.zeros(cfg.img_shape)
+
+    rr, cc = draw.disk(center=c, radius=r)
+
+    img[rr, cc] = cfg.max_gray
+    img[img > 255] = cfg.max_gray
+    img[img < 0] = cfg.min_gray
+    img = img.astype(np.int16)
+
+    os.makedirs(name=cfg.save_dir, exist_ok=True)
+    if plot:
+        PlotPhantom(img=img)
+    if save:
+        p = os.path.join(cfg.save_dir, "kite.npy")
+        np.save(file=p, arr=img)
+
+    return img
+
+def Rectangle(cfg: phantomConfig, start: tuple[int, int], end: tuple[int, int], plot: bool=False, save: bool=False):
+
+    """Create a rectangle shaped phantom""" 
+
+    img = np.zeros(cfg.img_shape)
+
+    rr, cc = draw.rectangle(start=start, end=end, shape=cfg.img_shape)
+
+    img[rr, cc] = cfg.max_gray
+    img[img > 255] = cfg.max_gray
+    img[img < 0] = cfg.min_gray
+    img = img.astype(np.int16)
+
+
+
+    os.makedirs(name=cfg.save_dir, exist_ok=True)
+    if plot:
+        PlotPhantom(img=img)
+    if save:
+        p = os.path.join(cfg.save_dir, "kite.npy")
+        np.save(file=p, arr=img)
+
+    return img
+
+def Ellipse(cfg: phantomConfig, r: int, c: int, r_radius: int, c_radius: int, rotation: float=0.0, plot: bool=False, save: bool=False) -> NDArray:
+
+    """Create a ellipse shaped phantom""" 
+
+    img = np.zeros(cfg.img_shape)
+
+    rr, cc = draw.ellipse(r=r, c=c, r_radius=r_radius, c_radius=c_radius, rotation=rotation, shape=cfg.img_shape)
+
+    img[rr, cc] = cfg.max_gray
+    img[img > 255] = cfg.max_gray
+    img[img < 0] = cfg.min_gray
+    img = img.astype(np.int16)
+
+    os.makedirs(name=cfg.save_dir, exist_ok=True)
+    if plot:
+        PlotPhantom(img=img)
+    if save:
+        p = os.path.join(cfg.save_dir, "kite.npy")
+        np.save(file=p, arr=img)
+
+    return img
 
 def RectangleDist(height, width, theta, rot=0.):
     """
@@ -54,6 +160,32 @@ def EllipseDist(b, a, theta, rot=0.):
     return r
 
 
+def RotateImage(r_coords: NDArray, c_coords: NDArray, angle: float=0) -> tuple[NDArray, NDArray]:
+
+    """Function can rotate an image about the center of the image"""
+
+    # Extract center of rotation
+    midR, midC = np.mean(r_coords), np.mean(c_coords)
+
+    # Compute angles of each point relative to centroid, then sort by angle
+    angles = np.arctan2(c_coords - midC, r_coords - midR)
+    sort_idx = np.argsort(angles)
+    rr_sorted = r_coords[sort_idx]
+    cc_sorted = c_coords[sort_idx]
+
+    # Shift to origin, shrink, then shift back (but we keep them centered temporarily)
+    r_centered = (rr_sorted - midR)
+    c_centered = (cc_sorted - midC)
+
+    if angle != 0:
+        rotC = np.cos(angle) * c_centered - np.sin(angle) * r_centered
+        rotR = np.sin(angle) * c_centered + np.cos(angle) * r_centered
+    else:
+        rotR, rotC = r_centered, c_centered
+
+    return rotR + midR, rotC + midC
+
+    
 def CreateBlob(center, width, height, radiusFunction, noise_amplitude, sigma,
                num_points=200, rot=0., theta=None, rng=None):
     """
