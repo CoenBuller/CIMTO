@@ -27,12 +27,12 @@ def EdgeDetection(phantom: np.ndarray) -> np.ndarray:
     return max_f != min_f
 
 if __name__ == "__main__":
-    phantom_path = os.path.join("Test_phantoms", "multiple_shapes_and_graylevels.npz")
+    phantom_path = os.path.join("Test_phantoms", "granular_phantom_single_grayvalues.npz")
     phantom_arrays = np.load(phantom_path)
     lst = phantom_arrays.files
     item = lst[0]
     phantom = phantom_arrays[item]
-
+    
     time0 = time.time()
     edges = EdgeDetection(phantom=phantom)
     print(f" Edge detection took {(time.time() - time0):.3f}s")

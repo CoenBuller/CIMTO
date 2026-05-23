@@ -30,7 +30,7 @@ def RoundTo(phantom: np.ndarray, graylevels: np.ndarray) -> np.ndarray:
 
 
 if __name__ == "__main__":
-    phantom_path = os.path.join("Test_phantoms", "multiple_shapes_and_graylevels.npz")
+    phantom_path = os.path.join("Test_phantoms", "Porouse_with_different_density.npz")
     phantom_arrays = np.load(phantom_path)
     lst = phantom_arrays.files
     item = lst[0]
@@ -52,6 +52,8 @@ if __name__ == "__main__":
                             max_constraint=255
                             )
     
+    np.save("Porouse_with_different_density", reconstruction)
+
     rounded_recon = RoundTo(reconstruction, graylevels=np.unique(phantom))
 
     fig, ax = plt.subplots(1, 2)
