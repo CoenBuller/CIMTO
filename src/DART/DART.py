@@ -23,7 +23,7 @@ def DART(phantom: np.ndarray,
          angles: np.ndarray = np.linspace(0, np.pi, 180),
          detector_spacing: int = 1,
          n_detectors: int = 512,
-         intensity_scale: int | None= None,
+         I0: int | None= None,
 
          vol_data: np.ndarray | float = 0,
          use_gpu: bool = False,
@@ -36,7 +36,7 @@ def DART(phantom: np.ndarray,
                                                                         n_detectors=n_detectors,
                                                                         angles=angles,
                                                                         detector_spacing=detector_spacing,
-                                                                        intensity_scale=intensity_scale,
+                                                                        I0=I0,
                                                                         )
 
     # Initial reconstruction

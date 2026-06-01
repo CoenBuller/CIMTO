@@ -23,7 +23,6 @@ def SIRT(sino_id: int,
     alg_cfg["ProjectionDataId"] = sino_id
     alg_cfg["ReconstructionDataId"] = rec_id
 
-
     if mask is None:
         mask = np.ones(img_shape)        
     mask_id = astra.data2d.create('-vol', vol_geom, mask)

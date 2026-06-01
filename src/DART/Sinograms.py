@@ -13,7 +13,7 @@ def Sinogram(phantom: np.ndarray,
             angles: np.ndarray, 
             detector_spacing: int, 
             beam_type: str='parallel',
-            intensity_scale: int | None=None, 
+            I0: int | None=None, 
             save_dir: str | None=None, 
             n_projections: int = 0,
             use_gpu: bool=False):
@@ -34,9 +34,10 @@ def Sinogram(phantom: np.ndarray,
     beam_type : str, optional
         Type of beam geometry. Must be either 'parallel' or 'fanflat'.
         Default is 'parallel'.
-    intensity_scale : int or None, optional
+    I0 : int or None, optional
         If provided, Poisson noise is added to the sinogram using this value as
         the mean photon count I0. Higher values produce higher signal‑to‑noise ratio.
+        Medium amount of noise added is done by setting I0 = 10e3
         Default is None (no noise added).
     save_dir : str or None, optional
         Directory path where individual projection images will be saved.
@@ -91,13 +92,18 @@ def Sinogram(phantom: np.ndarray,
     sino_id, sinogram = astra.creators.create_sino(phantom_id, proj_id)
 
     # Apply Poisson noise.
-    if intensity_scale is not None:
-        photon_counts = intensity_scale * np.exp(-sinogram/np.max(sinogram))
-        noisy_counts = np.random.poisson(photon_counts).astype(np.float64)
-        noisy_counts[noisy_counts <= 0] = 1
-
-        # Convert back to attenuation space (line integrals)
-        sinogram_noisy = -np.log(noisy_counts / intensity_scale)
+    if I0 is not None:
+        measured_intensity = I0 * np.exp(-sinogram/np.max(sinogram))
+    
+        # Add Poisson noise
+        noisy_counts = np.random.poisson(measured_intensity).astype(np.float64)
+        
+        # Handle zero counts (rare but possible)
+        # Option 1: Add small constant (biased but stable)
+        noisy_counts = np.maximum(noisy_counts, 1)
+        
+        # Convert back to attenuation
+        sinogram_noisy = -np.log(noisy_counts / I0)
         sino_id = astra.data2d.create('-sino', proj_geom, sinogram_noisy)
     
     # Save projections as images, if directory has been defined.
@@ -112,7 +118,7 @@ def Sinogram(phantom: np.ndarray,
     
     astra.data2d.delete(phantom_id)
 
-    if intensity_scale is not None:
+    if I0 is not None:
         assert sinogram_noisy is not None, "The noisy sinogram is still None but should be a np.ndarray."
         return proj_id, sino_id, sinogram_noisy, vol_geom, proj_geom
     

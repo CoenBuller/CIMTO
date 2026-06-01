@@ -19,5 +19,4 @@ Multi-Resolution DART Paper:
     - In the discussion they do tell us that they halve the pixel size each time. This could potentially be done in a better manner. Another thing they mentioned is that the initial poxel size has a larger potential for fast convergence.
     However this is only true when the smallest charachteristics are still larger than the largest pixel size. There is room for a potential improvement
 
-Deep-Learning with DART Papers:
-    - Still need to select and find them
+

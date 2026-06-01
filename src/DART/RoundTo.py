@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from numpy.typing import NDArray
 from ReconstructionAlgorithms import SIRT
 from Sinograms import Sinogram
 
@@ -62,3 +63,11 @@ if __name__ == "__main__":
     ax[0].set_title("Original phantom")
     ax[1].set_title("Rounded and reconstructed phantom")
     plt.show()
+
+def ScaleTo(recon: NDArray, low_percentil: int=1, high_percentile: int=99, max_gray: int=255):
+    low_val = np.percentile(recon, q=low_percentil)
+    high_val = np.percentile(recon, q=high_percentile)
+    print(low_val, high_val)
+
+    scaled = max_gray * (recon - low_val)/(high_val - low_val)
+    return scaled

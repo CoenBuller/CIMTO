@@ -3,7 +3,7 @@ import skimage as sk
 import os
 
 from numpy.typing import NDArray
-from Config import phantomConfig
+from PhantomGenerators.Config import phantomConfig
 from numpy.random import Generator
 from src.PhantomGenerators.PhantomGenerators import Ellipse, Rectangle, Kite, RotateImage
 
