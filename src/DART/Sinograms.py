@@ -2,18 +2,80 @@ import numpy as np
 import astra
 import matplotlib.pyplot as plt
 
+from typing import Callable
+from numpy.typing import NDArray
 from os.path import isdir
 from os import mkdir
 from PIL import Image
 from skimage import draw
 from ReconstructionAlgorithms import SIRT, FBP
 
+def PoissonNoise(sinogram: NDArray, SNR: int) -> NDArray:
+
+    A_max = sinogram.max()
+    A_norm = sinogram / A_max
+
+    I0 = SNR**2 / np.exp(-A_norm).mean()
+
+    measured_intensity = I0 * np.exp(-A_norm)
+    
+    # Add Poisson noise
+    noisy_counts = np.random.poisson(measured_intensity).astype(np.float64)
+    
+    # Handle zero count
+    noisy_counts = np.maximum(noisy_counts, 1)
+    
+    # Convert back to attenuation with correct scale
+    sinogram_noisy = A_max * -np.log(noisy_counts / I0)
+    return sinogram_noisy
+
+def NormalNoise(sinogram: NDArray, SNR: float) -> NDArray:
+    A_max = sinogram.max()
+    A_norm = sinogram / A_max
+
+    I0 = SNR**2 / A_norm.mean()
+
+    measured_intensity = I0 * np.exp(-A_norm)
+    
+    # Add Normal noise
+    std = np.sqrt(measured_intensity / SNR) # SNR of normal noise is: SNR = S / std**2
+    noisy_counts = np.random.normal(measured_intensity, std).astype(np.float64)
+    
+    # Handle zero count
+    noisy_counts = np.maximum(noisy_counts, 1)
+    
+    # Convert back to attenuation with correct scale
+    sinogram_noisy = A_max * -np.log(noisy_counts / I0)
+    return sinogram_noisy
+
+
+def UniformNoise(sinogram: NDArray, SNR: float) -> NDArray:
+    A_max = sinogram.max()
+    A_norm = sinogram / A_max
+
+    # Convert to photon counts
+    measured_intensity = np.exp(-A_norm)
+    
+    # Sample uniform noise
+    d =  measured_intensity * np.sqrt(3) / SNR # For uniform(-d, d), the std is d/sqrt(3)
+    noisy_counts = np.random.uniform(-d, d).astype(np.float64)
+    
+    # Add uniform noise to the original sinogram
+    noisy_counts += sinogram
+
+    # Convert back to attenuation values 
+    sinogram_noisy = A_max * -np.log(noisy_counts)
+    
+    return sinogram_noisy
+
+
 def Sinogram(phantom: np.ndarray, 
             n_detectors: int, 
             angles: np.ndarray, 
             detector_spacing: int, 
             beam_type: str='parallel',
-            I0: int | None=None, 
+            SNR: int | None=None, 
+            noise_func: Callable=PoissonNoise,
             save_dir: str | None=None, 
             n_projections: int = 0,
             use_gpu: bool=False):
@@ -71,13 +133,19 @@ def Sinogram(phantom: np.ndarray,
             proj_geom : np.ndarray
                 Projection geometry created with the given beam parameters.
     """
+
+
+    if beam_type not in ['parallel', 'fanflat']:
+        raise ValueError("beam type must be either 'parallel' or 'fanflat'")
+    
+    if noise_func not in [PoissonNoise, NormalNoise]:
+        raise ValueError("Noise type must be either PoissonNoise, GuassianNoise or 'uniform'")
+
     sinogram_noisy = None
     width, height = phantom.shape
     vol_geom = astra.creators.create_vol_geom([width,height])
     phantom_id = astra.data2d.create('-vol', vol_geom, data=phantom)
 
-    if beam_type not in ['parallel', 'fanflat']:
-        raise ValueError("beam type must be either 'parallel' or 'fanflat'")
 
     # create projection geometry
     proj_geom = astra.create_proj_geom(beam_type, detector_spacing, n_detectors, angles)
@@ -92,18 +160,8 @@ def Sinogram(phantom: np.ndarray,
     sino_id, sinogram = astra.creators.create_sino(phantom_id, proj_id)
 
     # Apply Poisson noise.
-    if I0 is not None:
-        measured_intensity = I0 * np.exp(-sinogram/np.max(sinogram))
-    
-        # Add Poisson noise
-        noisy_counts = np.random.poisson(measured_intensity).astype(np.float64)
-        
-        # Handle zero counts (rare but possible)
-        # Option 1: Add small constant (biased but stable)
-        noisy_counts = np.maximum(noisy_counts, 1)
-        
-        # Convert back to attenuation
-        sinogram_noisy = -np.log(noisy_counts / I0)
+    if SNR is not None:
+        sinogram_noisy = 
         sino_id = astra.data2d.create('-sino', proj_geom, sinogram_noisy)
     
     # Save projections as images, if directory has been defined.

@@ -4,10 +4,10 @@ import os
 import astra
 import time
 
-
+from typing import Callable
 from tqdm import tqdm
 from Sinograms import Sinogram, ResidualSinogram
-from ReconstructionAlgorithms import SIRT
+from ReconstructionAlgorithms import SIRT, SART
 from RoundTo import RoundTo
 from FreePixels import ChooseFreePixels
 from EdgeDetector import EdgeDetection
@@ -23,7 +23,8 @@ def DART(phantom: np.ndarray,
          angles: np.ndarray = np.linspace(0, np.pi, 180),
          detector_spacing: int = 1,
          n_detectors: int = 512,
-         I0: int | None= None,
+         SNR: int | None= None,
+         noise_type: Callable | None= None,
 
          vol_data: np.ndarray | float = 0,
          use_gpu: bool = False,
@@ -36,12 +37,12 @@ def DART(phantom: np.ndarray,
                                                                         n_detectors=n_detectors,
                                                                         angles=angles,
                                                                         detector_spacing=detector_spacing,
-                                                                        I0=I0,
+                                                                        SNR=SNR,
                                                                         )
 
     # Initial reconstruction
     time0 = time.time()
-    reconstruction = SIRT(
+    reconstruction = SART(
                           sino_id=sino_id,
                           vol_geom=vol_geom, 
                           vol_data=vol_data, 
