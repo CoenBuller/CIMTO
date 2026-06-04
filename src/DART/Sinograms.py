@@ -10,8 +10,8 @@ from PIL import Image
 from skimage import draw
 from ReconstructionAlgorithms import SIRT, FBP
 
-def PoissonNoise(sinogram: NDArray, SNR: int) -> NDArray:
 
+def PoissonNoise(sinogram: NDArray, SNR: int) -> NDArray:
     A_max = sinogram.max()
     A_norm = sinogram / A_max
 
@@ -28,6 +28,7 @@ def PoissonNoise(sinogram: NDArray, SNR: int) -> NDArray:
     # Convert back to attenuation with correct scale
     sinogram_noisy = A_max * -np.log(noisy_counts / I0)
     return sinogram_noisy
+
 
 def NormalNoise(sinogram: NDArray, SNR: float) -> NDArray:
     A_max = sinogram.max()
@@ -161,7 +162,7 @@ def Sinogram(phantom: np.ndarray,
 
     # Apply Poisson noise.
     if SNR is not None:
-        sinogram_noisy = 
+        sinogram_noisy = noise_func(sinogram, SNR)
         sino_id = astra.data2d.create('-sino', proj_geom, sinogram_noisy)
     
     # Save projections as images, if directory has been defined.
@@ -176,7 +177,7 @@ def Sinogram(phantom: np.ndarray,
     
     astra.data2d.delete(phantom_id)
 
-    if I0 is not None:
+    if SNR is not None:
         assert sinogram_noisy is not None, "The noisy sinogram is still None but should be a np.ndarray."
         return proj_id, sino_id, sinogram_noisy, vol_geom, proj_geom
     

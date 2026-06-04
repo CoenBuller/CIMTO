@@ -4,33 +4,40 @@ import os
 import astra
 import time
 
-from typing import Callable
+from numpy.typing import NDArray
+from typing import Callable, Any
 from tqdm import tqdm
-from Sinograms import Sinogram, ResidualSinogram
+from Sinograms import Sinogram, ResidualSinogram, PoissonNoise, NormalNoise, UniformNoise
 from ReconstructionAlgorithms import SIRT, SART
-from RoundTo import RoundTo
+from RoundTo import RoundTo, Smooth, GaussianKernel
 from FreePixels import ChooseFreePixels
 from EdgeDetector import EdgeDetection
 
 
-def DART(phantom: np.ndarray,
-         graylevels: np.ndarray,
-         p: float = 0,
+
+def DART(phantom: NDArray,
+         graylevels: NDArray,
+         p: float = 1,
          dart_iters: int = 50,
 
-         init_sirt_iters: int = 50,
-         sirt_iters: int = 10,
-         angles: np.ndarray = np.linspace(0, np.pi, 180),
+         init_arm_iters: int = 50,
+         arm_iters: int = 10,
+         angles: NDArray = np.linspace(0, np.pi, 180),
          detector_spacing: int = 1,
          n_detectors: int = 512,
+
          SNR: int | None= None,
-         noise_type: Callable | None= None,
+         noise_func: Callable = PoissonNoise,
 
-         vol_data: np.ndarray | float = 0,
+         smoothing: float = 1,
+
+         vol_data: NDArray | float = 0,
          use_gpu: bool = False,
-         stagnated_iteraions: int = 3,
 
-        ) -> np.ndarray:
+        ) -> tuple[NDArray, dict[str, list[float]]]:
+    
+
+    results = {"K_error" : [], "Abs_error": []}
 
     projector_id, sino_id, sinogram_img, vol_geom, proj_geom = Sinogram(
                                                                         phantom=phantom,
@@ -38,6 +45,7 @@ def DART(phantom: np.ndarray,
                                                                         angles=angles,
                                                                         detector_spacing=detector_spacing,
                                                                         SNR=SNR,
+                                                                        noise_func=noise_func
                                                                         )
 
     # Initial reconstruction
@@ -47,19 +55,21 @@ def DART(phantom: np.ndarray,
                           vol_geom=vol_geom, 
                           vol_data=vol_data, 
                           projector_id=projector_id,
-                          iters=init_sirt_iters,
+                          iters=init_arm_iters,
                           min_constraint=np.min(graylevels),
                           max_constraint=np.max(graylevels),
                           use_gpu=use_gpu
                           )
-
+    
+    # Smooth and segmentate
+    reconstruction = Smooth(reconstruction, sigma=smoothing)
     reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
     free_mask = ChooseFreePixels(reconstruction, p)
 
     print('\n')
     print("="*75)
     print("Initial reconstruction has been made. Will now continue with the DART loop")
-    print(f"Initial reconstruction took {(time.time() - time0):.3f}s, for {init_sirt_iters} iterations")
+    print(f"Initial reconstruction took {(time.time() - time0):.3f}s, for {init_arm_iters} iterations")
     print("="*75, '\n')
     
     with tqdm(total=dart_iters, desc="DART", unit="iter") as pbar:
@@ -70,8 +80,9 @@ def DART(phantom: np.ndarray,
                          abs_error=f"{abs_error}")
         pbar.update(1)  # account for the initial SIRT pass
 
-        stagnated = 0
-        K_error_prev = K_error
+        results["Abs_error"].append(abs_error)
+        results["K_error"].append(K_error)
+        
         for i in range(dart_iters - 1):
 
             # Calculate residual sinogram b_res = b_0 - A(x_fixed)
@@ -83,21 +94,26 @@ def DART(phantom: np.ndarray,
                                                 projector_geom=proj_geom)
             
             # Solve b_res = A(x_free)
-            reconstruction = SIRT(
-                sino_id=residual_sino_id,
-                mask=free_mask,
-                vol_geom=vol_geom,
-                vol_data=reconstruction,
-                projector_id=projector_id,
-                iters=sirt_iters,
-                min_constraint=np.min(graylevels),
-                max_constraint=np.max(graylevels),
-                use_gpu=use_gpu
-            )
-            
+            reconstruction = SART(
+                                  sino_id=residual_sino_id,
+                                  mask=free_mask,
+                                  vol_geom=vol_geom,
+                                  vol_data=reconstruction,
+                                  projector_id=projector_id,
+                                  iters=arm_iters,
+                                  min_constraint=np.min(graylevels),
+                                  max_constraint=np.max(graylevels),
+                                  use_gpu=use_gpu
+                                 )
+
+
+            # Smooth the reconstruction
+            reconstruction = Smooth(reconstruction, sigma=smoothing)
+
             # Segment pixel values of reconstruction and determine new set of free pixels
             reconstruction = RoundTo(reconstruction, graylevels)
             free_mask = ChooseFreePixels(reconstruction, p)
+
 
             # Some metrics
             K_error = np.sum((reconstruction != phantom)) # Number of wrong pixels
@@ -106,38 +122,37 @@ def DART(phantom: np.ndarray,
                              abs_error=f"{abs_error}")
             pbar.update(1)
 
-            if K_error == K_error_prev:
-                stagnated += 1
-                if stagnated == stagnated_iteraions: # If stagnated for "stagnated_iterations" stop DART loop
-                    break
-            
-            K_error_prev = K_error
+            results["Abs_error"].append(abs_error)
+            results["K_error"].append(K_error)
 
+    
     astra.projector.delete(projector_id)
-    return reconstruction
+    return reconstruction, results
 
 if __name__ == "__main__":
-    phantom_path = os.path.join("Test_phantoms", "Porouse_with_different_density.npz")
+    phantom_path = os.path.join("Test_phantoms", "phantom_2.npz")
     phantom_arrays = np.load(phantom_path)
     lst = phantom_arrays.files
     item = lst[0]
     phantom = phantom_arrays[item]
 
-    reconstruction = DART(phantom=phantom,
+    reconstruction, _ = DART(phantom=phantom,
                           graylevels=np.unique(phantom),
-                          p=0.1,
-                          dart_iters=20,
+                          p=0.85,
+                          dart_iters=200,
 
-                          sirt_iters=20,
-                          init_sirt_iters=200,
+                          arm_iters=2,
+                          init_arm_iters=10,
 
-                          angles=np.linspace(0, np.pi, 180),
+                          angles=np.linspace(0, np.pi, 20),
                           detector_spacing=1,
                           n_detectors=512,
 
                           vol_data=0,
                           use_gpu=False,
-                          stagnated_iteraions=2,)
+                          
+                          SNR=None,
+                          noise_func=PoissonNoise)
 
 
     print('\n',"="*75)

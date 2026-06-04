@@ -2,11 +2,29 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from typing import Any
 from numpy.typing import NDArray
 from ReconstructionAlgorithms import SIRT
 from Sinograms import Sinogram
+from scipy.ndimage import gaussian_filter
 
-def RoundTo(phantom: np.ndarray, graylevels: np.ndarray) -> np.ndarray:
+
+def GaussianKernel(size, sigma):
+    """Creates a 2D Gaussian filter kernel."""
+    ax = np.linspace(-(size - 1) / 2., (size - 1) / 2., size)
+    xx, yy = np.meshgrid(ax, ax)
+    
+    # Calculate the 2D Gaussian formula
+    kernel = np.exp(-0.5 * (np.square(xx) + np.square(yy)) / np.square(sigma))
+    
+    # Normalize the kernel so its elements sum to 1
+    return kernel / np.sum(kernel)
+
+def Smooth(phantom: NDArray, sigma: float) -> NDArray:
+    smooth = gaussian_filter(input=phantom, sigma=sigma)
+    return smooth
+
+def RoundTo(phantom: NDArray, graylevels: NDArray) -> NDArray:
     """
     Function rounds each pixel value to the nearest graylevel in a set of given graylevels
 
