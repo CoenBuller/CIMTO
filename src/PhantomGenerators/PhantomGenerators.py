@@ -5,8 +5,7 @@ import os
 from scipy.ndimage import gaussian_filter1d
 from skimage import draw
 from numpy.typing import NDArray
-from Config import phantomConfig
-
+from PhantomConfig import phantomConfig
 
 
 def PlotPhantom(img: NDArray) -> None:
@@ -15,43 +14,33 @@ def PlotPhantom(img: NDArray) -> None:
     plt.show()
 
 
-
-def Kite(cfg: phantomConfig, d_height: float=0.3, d_width: float=0.6, rotate: float=0.0, plot: bool=False, save: bool=False) -> NDArray:
-
-    """Create a kite shaped phantom""" 
-
-    img = np.zeros(cfg.img_shape)
-
-    diamond_x, diamond_y = [int(d_height*256), 256, int((2-d_height)*256), 256], [256, int(d_width*256), 256, int((2-d_width)*256)]
-    rr, cc = draw.polygon(diamond_x, diamond_y, shape=img.shape)
-    img[rr, cc] = 1
-
-    img = img * cfg.max_gray
-    img[img > 255] = cfg.max_gray
-    img[img < 0] = cfg.min_gray
-    img = img.astype(np.int16)
-
-    os.makedirs(name=cfg.save_dir, exist_ok=True)
-    if plot:
-        PlotPhantom(img=img)
-    if save:
-        p = os.path.join(cfg.save_dir, "kite.npy")
-        np.save(file=p, arr=img)
-
-    return img
-
-
-def Circle(cfg: phantomConfig, r: int, c: tuple[int, int], plot: bool=False, save: bool=False) -> NDArray:
-
-    """Create a circle shaped phantom""" 
+def Polygon(cfg: phantomConfig, center: tuple[int, int], base_radius: float, sides: int, rotation: float, irregularity: float=0.3, plot: bool=False, save: bool=False):
+    """
+    Generates coordinates for an irregular polygon.
+    
+    Parameters:
+    - center: (x, y) coordinates of the center
+    - base_radius: The average distance from center to vertices
+    - sides: Number of vertices
+    - irregularity: Max percentage variance in radius (0.0 to 1.0)
+    """
 
     img = np.zeros(cfg.img_shape)
-
-    rr, cc = draw.disk(center=c, radius=r)
-
+    cx, cy = center
+    angles = np.linspace(0, 2 * np.pi, sides, endpoint=False)
+    
+    # Randomly vary the radius for each vertex
+    # e.g., if base_radius is 100 and irregularity is 0.3,
+    # the radius for each point will randomly fall between 70 and 130.
+    random_offsets = np.random.uniform(1 - irregularity, 1 + irregularity, sides)
+    radii = base_radius * random_offsets
+    
+    # Calculate the noisy coordinates
+    cols = cx + radii * np.cos(angles + rotation)
+    rows = cy + radii * np.sin(angles + rotation)
+    
+    rr, cc = draw.polygon(r=rows, c=cols, shape=cfg.img_shape)
     img[rr, cc] = cfg.max_gray
-    img[img > 255] = cfg.max_gray
-    img[img < 0] = cfg.min_gray
     img = img.astype(np.int16)
 
     os.makedirs(name=cfg.save_dir, exist_ok=True)
@@ -63,29 +52,6 @@ def Circle(cfg: phantomConfig, r: int, c: tuple[int, int], plot: bool=False, sav
 
     return img
 
-def Rectangle(cfg: phantomConfig, start: tuple[int, int], end: tuple[int, int], plot: bool=False, save: bool=False):
-
-    """Create a rectangle shaped phantom""" 
-
-    img = np.zeros(cfg.img_shape)
-
-    rr, cc = draw.rectangle(start=start, end=end, shape=cfg.img_shape)
-
-    img[rr, cc] = cfg.max_gray
-    img[img > 255] = cfg.max_gray
-    img[img < 0] = cfg.min_gray
-    img = img.astype(np.int16)
-
-
-
-    os.makedirs(name=cfg.save_dir, exist_ok=True)
-    if plot:
-        PlotPhantom(img=img)
-    if save:
-        p = os.path.join(cfg.save_dir, "kite.npy")
-        np.save(file=p, arr=img)
-
-    return img
 
 def Ellipse(cfg: phantomConfig, r: int, c: int, r_radius: int, c_radius: int, rotation: float=0.0, plot: bool=False, save: bool=False) -> NDArray:
 
@@ -96,8 +62,6 @@ def Ellipse(cfg: phantomConfig, r: int, c: int, r_radius: int, c_radius: int, ro
     rr, cc = draw.ellipse(r=r, c=c, r_radius=r_radius, c_radius=c_radius, rotation=rotation, shape=cfg.img_shape)
 
     img[rr, cc] = cfg.max_gray
-    img[img > 255] = cfg.max_gray
-    img[img < 0] = cfg.min_gray
     img = img.astype(np.int16)
 
     os.makedirs(name=cfg.save_dir, exist_ok=True)
@@ -108,6 +72,7 @@ def Ellipse(cfg: phantomConfig, r: int, c: int, r_radius: int, c_radius: int, ro
         np.save(file=p, arr=img)
 
     return img
+
 
 def RectangleDist(height, width, theta, rot=0.):
     """
@@ -255,7 +220,7 @@ def CreateBlob(center, width, height, radiusFunction, noise_amplitude, sigma,
     return r_coords, c_coords
 
 
-def ShrinkShape(r_coords, c_coords, shrinkFactor, smoothing=3, rot=0., rng=None):
+def ShrinkShape(r_coords, c_coords, shrinkFactor, smoothing=3, rot=0., translate=(0,0), rng=None):
     """
     Shrink a shape defined by its boundary coordinates towards its centroid,
     apply smoothing, and optionally rotate it.
@@ -274,6 +239,8 @@ def ShrinkShape(r_coords, c_coords, shrinkFactor, smoothing=3, rot=0., rng=None)
     rot : float, optional
         Rotation angle (in radians) to apply after shrinking and smoothing.
         Default 0 (no rotation).
+    tranlate: tuple[int, int], optional
+        Translate the center of the image
 
     Returns
     -------
@@ -310,7 +277,7 @@ def ShrinkShape(r_coords, c_coords, shrinkFactor, smoothing=3, rot=0., rng=None)
         rotR, rotC = smoothR, smoothC
 
     # Shift back to the original centroid
-    return rotR + midR, rotC + midC
+    return rotR + midR + translate[0], rotC + midC + translate[1]
 
 
 def EdgeImage(img):
