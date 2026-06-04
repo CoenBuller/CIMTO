@@ -5,11 +5,11 @@ import astra
 import time
 
 from numpy.typing import NDArray
-from typing import Callable, Any
+from typing import Callable
 from tqdm import tqdm
-from Sinograms import Sinogram, ResidualSinogram, PoissonNoise, NormalNoise, UniformNoise
-from ReconstructionAlgorithms import SIRT, SART
-from RoundTo import RoundTo, Smooth, GaussianKernel
+from Sinograms import Sinogram, ResidualSinogram, PoissonNoise
+from ReconstructionAlgorithms import SART
+from RoundTo import RoundTo, Smooth
 from FreePixels import ChooseFreePixels
 from EdgeDetector import EdgeDetection
 
@@ -141,10 +141,10 @@ if __name__ == "__main__":
                           p=0.85,
                           dart_iters=200,
 
-                          arm_iters=2,
+                          arm_iters=3,
                           init_arm_iters=10,
 
-                          angles=np.linspace(0, np.pi, 20),
+                          angles=np.linspace(0, np.pi, 10),
                           detector_spacing=1,
                           n_detectors=512,
 
