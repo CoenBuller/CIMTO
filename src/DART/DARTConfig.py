@@ -21,10 +21,12 @@ class Config:
     # ARM parameters
     arm_iters: int = 3
     init_arm_iters: int = 10
+    sart_relaxation: float = 1.0  # SART relaxation factor (lambda)
 
     # Sinogram params
     n_angles: int = 10
     angle_range: tuple[float, float] = (0, 2*np.pi)
+    angle_order: str = "sequential"  # "sequential" | "randomized" | "maximally_separated"
 
     # Noise 
     snr: int | None = None
