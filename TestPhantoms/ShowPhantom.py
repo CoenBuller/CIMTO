@@ -12,4 +12,4 @@ phantom = np.load(path)
 
 
 plt.imshow(phantom, cmap="gray")
-plt.show()
+plt.savefig("phantomtest")

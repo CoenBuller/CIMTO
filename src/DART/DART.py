@@ -70,8 +70,11 @@ def DART(phantom: NDArray,
     
     # Smooth and segmentate
     if smoothing:
-        reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(reconstruction))
-    continuous_reconstruction = reconstruction.copy()          # <-- add this
+        temp_rounded = RoundTo(phantom=reconstruction, graylevels=graylevels)
+        edge_mask = EdgeDetection(temp_rounded)
+        reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(edge_mask))
+
+    continuous_reconstruction = reconstruction.copy()          
     reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
     free_mask = ChooseFreePixels(reconstruction, p)
 
@@ -125,7 +128,9 @@ def DART(phantom: NDArray,
 
             # Smooth the reconstruction
             if smoothing:
-                reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(reconstruction))
+                temp_rounded = RoundTo(reconstruction, graylevels)
+                edge_mask = EdgeDetection(temp_rounded)
+                reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(edge_mask))
 
             continuous_reconstruction = reconstruction.copy()
             # Segment pixel values of reconstruction and determine new set of free pixels
@@ -150,7 +155,7 @@ def DART(phantom: NDArray,
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-type', choices=['1', '2', '3', '4'], default='0')
+    parser.add_argument('-type', choices=['1', '2', '3', '4'], default='1')
     parser.add_argument('-instance', choices=['1', '2', '3', '4', '5', '6', '7', '8', '9'] , default='0')
     args = parser.parse_args()
     phantom_path = os.path.join(f"TestPhantoms", f"phantom_{args.type}", f"{args.instance}.npy")
@@ -174,7 +179,7 @@ if __name__ == "__main__":
                           SNR=None,
                           noise_func=PoissonNoise,
                           
-                          smoothing=2)
+                          smoothing=0.5)
 
 
     print('\n',"="*75)
