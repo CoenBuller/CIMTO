@@ -10,4 +10,4 @@ class phantomConfig:
 
     img_shape: tuple[int, int] = (512, 512)
     seed: int = 69
-    save_dir: str = "Phantoms/"
+    save_dir: str = "TestPhantoms/"

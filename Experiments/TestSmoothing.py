@@ -76,7 +76,8 @@ def RunExperiment(phantom_cfg: phantomConfig,
                 print(f"Running: Smoothing: {std} | N projections: {n} | Phantom: {PHANTOM_NAMES[phantom_gen]}")
                 results = {}
                 for i in range(N_ITERS):
-                    phantom = MakePhantom(cfg=phantom_cfg, rng=rng, phantom_generator=phantom_gen)
+                    path = os.path.join("TestPhantoms", str(PHANTOM_NAMES[phantom_gen]), str(i)+".npy")
+                    phantom = np.load(path)
                     dart_cfg.gray_values = tuple(value for value in np.unique(phantom))
                     results[i] = Reconstruct(phantom, cfg=dart_config)
 
