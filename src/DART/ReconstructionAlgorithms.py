@@ -12,25 +12,27 @@ def SART(sino_id: int,
 
          vol_data: float | np.ndarray = 0,
          iters: int = 200,
-         mask= None,
+         relaxation: float = 1.0,
+         mask=None,
          use_gpu: bool = False) -> np.ndarray:
 
     rec_type = "SART_CUDA" if use_gpu else "SART"
 
-    rec_id  = astra.data2d.create("-vol",  vol_geom,  data=vol_data)
+    rec_id = astra.data2d.create("-vol", vol_geom, data=vol_data)
     alg_cfg: dict[str, Any] = astra.astra_dict(rec_type)
-    alg_cfg["ProjectorId"] = projector_id 
+    alg_cfg["ProjectorId"] = projector_id
     alg_cfg["ProjectionDataId"] = sino_id
     alg_cfg["ReconstructionDataId"] = rec_id
 
     if mask is None:
-        mask = np.ones(img_shape)   
-             
+        mask = np.ones(img_shape)
+
     mask_id = astra.data2d.create('-vol', vol_geom, mask)
     alg_cfg['option'] = {
         'ReconstructionMaskId': mask_id,
         'MaxConstraint': max_constraint,
-        'MinConstraint': min_constraint
+        'MinConstraint': min_constraint,
+        'Relaxation': relaxation,
     }
 
     # Run
@@ -40,7 +42,7 @@ def SART(sino_id: int,
 
     # Clean up ASTRA objects
     astra.algorithm.delete(algorithm_id)
-    astra.data2d.delete(rec_id)      
+    astra.data2d.delete(rec_id)
     astra.data2d.delete(mask_id)
 
     return reconstruction_img
