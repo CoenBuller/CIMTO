@@ -13,8 +13,10 @@ def SART(sino_id: int,
          vol_data: float | np.ndarray = 0,
          iters: int = 200,
          relaxation: float = 1.0,
+
+         angle_ordering: str = "randomized",
          mask=None,
-         use_gpu: bool = False) -> np.ndarray:
+         use_gpu: bool = False,) -> np.ndarray:
 
     rec_type = "SART_CUDA" if use_gpu else "SART"
 
