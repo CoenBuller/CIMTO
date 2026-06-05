@@ -5,12 +5,11 @@ import matplotlib.pyplot as plt
 
 from numpy.typing import NDArray
 from numpy.random import Generator
-from PhantomConfig import phantomConfig
+from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from skimage.draw import disk, random_shapes
 from skimage.measure import label
-from PhantomGenerators import PlotPhantom 
-from scipy.ndimage import gaussian_filter
+from src.PhantomGenerators.PhantomGenerators import PlotPhantom 
 
 
 ############################################# Circle With Geo Shapes #############################################

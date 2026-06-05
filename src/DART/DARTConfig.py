@@ -1,6 +1,6 @@
 import numpy as np
 
-from Sinograms import PoissonNoise
+from src.DART.Sinograms import PoissonNoise
 from numpy.typing import NDArray
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -25,7 +25,6 @@ class Config:
     # Sinogram params
     n_angles: int = 10
     angle_range: tuple[float, float] = (0, 2*np.pi)
-    angles: NDArray = np.linspace(angle_range[0], angle_range[1], n_angles)
 
     # Noise 
     snr: int | None = None

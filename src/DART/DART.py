@@ -7,11 +7,11 @@ import time
 from numpy.typing import NDArray
 from typing import Callable
 from tqdm import tqdm
-from Sinograms import Sinogram, ResidualSinogram, PoissonNoise
-from ReconstructionAlgorithms import SART
-from RoundTo import RoundTo, Smooth
-from FreePixels import ChooseFreePixels
-from EdgeDetector import EdgeDetection
+from src.DART.Sinograms import Sinogram, ResidualSinogram, PoissonNoise
+from src.DART.ReconstructionAlgorithms import SART
+from src.DART.RoundTo import RoundTo, Smooth
+from src.DART.FreePixels import ChooseFreePixels
+from src.DART.EdgeDetector import EdgeDetection
 
 
 
@@ -29,10 +29,11 @@ def DART(phantom: NDArray,
          SNR: int | None= None,
          noise_func: Callable = PoissonNoise,
 
-         smoothing: float = 1,
+         smoothing: float | None = 1,
 
          vol_data: NDArray | float = 0,
          use_gpu: bool = False,
+         verbal: bool = False
 
         ) -> tuple[NDArray, dict[str, list[float]]]:
     
@@ -62,16 +63,18 @@ def DART(phantom: NDArray,
                           )
     
     # Smooth and segmentate
-    reconstruction = Smooth(reconstruction, sigma=smoothing)
+    if smoothing:
+        reconstruction = Smooth(reconstruction, sigma=smoothing)
     reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
     free_mask = ChooseFreePixels(reconstruction, p)
 
-    print('\n')
-    print("="*75)
-    print("Initial reconstruction has been made. Will now continue with the DART loop")
-    print(f"Initial reconstruction took {(time.time() - time0):.3f}s, for {init_arm_iters} iterations")
-    print("="*75, '\n')
-    
+    if verbal:
+        print('\n')
+        print("="*75)
+        print("Initial reconstruction has been made. Will now continue with the DART loop")
+        print(f"Initial reconstruction took {(time.time() - time0):.3f}s, for {init_arm_iters} iterations")
+        print("="*75, '\n')
+        
     with tqdm(total=dart_iters, desc="DART", unit="iter") as pbar:
 
         K_error = np.sum((reconstruction != phantom))
@@ -108,7 +111,8 @@ def DART(phantom: NDArray,
 
 
             # Smooth the reconstruction
-            reconstruction = Smooth(reconstruction, sigma=smoothing)
+            if smoothing:
+                reconstruction = Smooth(reconstruction, sigma=smoothing)
 
             # Segment pixel values of reconstruction and determine new set of free pixels
             reconstruction = RoundTo(reconstruction, graylevels)
@@ -130,7 +134,7 @@ def DART(phantom: NDArray,
     return reconstruction, results
 
 if __name__ == "__main__":
-    phantom_path = os.path.join("Test_phantoms", "phantom_2.npz")
+    phantom_path = os.path.join("Test_phantoms", "granular_phantom_single_grayvalues.npz")
     phantom_arrays = np.load(phantom_path)
     lst = phantom_arrays.files
     item = lst[0]
@@ -138,13 +142,13 @@ if __name__ == "__main__":
 
     reconstruction, _ = DART(phantom=phantom,
                           graylevels=np.unique(phantom),
-                          p=0.85,
-                          dart_iters=200,
+                          p=0.5,
+                          dart_iters=10,
 
-                          arm_iters=3,
-                          init_arm_iters=10,
+                          arm_iters=20,
+                          init_arm_iters=2000,
 
-                          angles=np.linspace(0, np.pi, 10),
+                          angles=np.linspace(0, np.pi, 20),
                           detector_spacing=1,
                           n_detectors=512,
 

@@ -5,8 +5,8 @@ import numpy as np
 from numpy.typing import NDArray
 from numpy.random import Generator
 
-from PhantomConfig import phantomConfig
-from PhantomGenerators.PhantomGenerators import PlotPhantom 
+from src.PhantomGenerators.PhantomConfig import phantomConfig
+from src.PhantomGenerators.PhantomGenerators import PlotPhantom 
 
 
 from skimage.draw import disk
@@ -174,7 +174,7 @@ def make_phantom2(cfg, rng, inner_erode_1=INNER_ERODE_1,
     """
 
     img, mask = make_phantom1(cfg, n_blobs=N_BLOBS, min_r=MIN_RADIUS, max_r=MAX_RADIUS,
-                            n_verts=N_VERTS, rng=rng, jagged=args.jagged, return_mask=True)
+                            n_verts=N_VERTS, rng=rng, jagged=True, return_mask=True)
     
     shell1 = erosion(mask, footprint=disk(inner_erode_1))
     shell1 = gaussian_filter1d(shell1, sigma=smoothing)

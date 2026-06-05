@@ -4,7 +4,7 @@ import time
 
 import matplotlib.pyplot as plt
 
-from EdgeDetector import EdgeDetection
+from src.DART.EdgeDetector import EdgeDetection
 
 def ChooseFreePixels(phantom: np.ndarray, p: float) -> np.ndarray:
     """

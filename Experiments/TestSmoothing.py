@@ -2,13 +2,13 @@ import os
 import pickle
 import numpy as np
 
-from DART.DART import DART
-from DART.DARTConfig import Config
-from DART.Sinograms import PoissonNoise
-from PhantomGenerators.GeoPhantoms import CircleWithGeoShapes
-from PhantomGenerators.GranularPhantoms import BinaryGranularPhantom
-from PhantomGenerators.ConcavePhantoms import make_phantom2, make_phantom1
-from PhantomGenerators.PhantomConfig import phantomConfig
+from src.DART.DART import DART
+from src.DART.DARTConfig import Config
+from src.DART.Sinograms import PoissonNoise
+from src.PhantomGenerators.GeoPhantoms import CircleWithGeoShapes
+from src.PhantomGenerators.GranularPhantoms import BinaryGranularPhantom
+from src.PhantomGenerators.ConcavePhantoms import make_phantom2, make_phantom1
+from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from typing import Callable
 from numpy.typing import NDArray
@@ -38,7 +38,7 @@ def Reconstruct(phantom: NDArray, cfg: Config):
                       init_arm_iters=cfg.init_arm_iters,
                       arm_iters=cfg.arm_iters,
 
-                      angles=cfg.angles,
+                      angles=np.linspace(cfg.angle_range[0], cfg.angle_range[1], cfg.n_angles, endpoint=False),
                       detector_spacing=1,
                       n_detectors=512,
 
@@ -66,17 +66,18 @@ def RunExperiment(phantom_cfg: phantomConfig,
         dart_config.sigma = std  
 
         for n in n_projections:
-            dart_config.angles = np.linspace(0, np.pi, n, endpoint=False) 
+            dart_config.n_angles = n
 
             save_dir = os.path.join(dart_config.save_dir, "smoothing", f"{std}", f"projections_{n}")
             os.makedirs(save_dir, exist_ok=True)
 
             for phantom_gen in phantoms:
                 file_name = PHANTOM_NAMES[phantom_gen]
-
+                print(f"Running: Smoothing: {std} | N projections: {n} | Phantom: {PHANTOM_NAMES[phantom_gen]}")
                 results = {}
                 for i in range(N_ITERS):
                     phantom = MakePhantom(cfg=phantom_cfg, rng=rng, phantom_generator=phantom_gen)
+                    dart_cfg.gray_values = tuple(value for value in np.unique(phantom))
                     results[i] = Reconstruct(phantom, cfg=dart_config)
 
                 save_path = os.path.join(save_dir, f"{file_name}.pkl")
@@ -84,3 +85,16 @@ def RunExperiment(phantom_cfg: phantomConfig,
                     pickle.dump(results, f)
                 
                 print(f"Saved: {save_path}")
+
+
+if __name__ == "__main__":
+
+    phantom_cfg = phantomConfig()
+    dart_cfg = Config()
+    rng = np.random.default_rng(seed=dart_cfg.seed)
+    RunExperiment(phantom_cfg=phantom_cfg, 
+                  dart_config=dart_cfg, 
+                  rng=rng, 
+                  smoothing_values = SMOOTHING_VALUES, 
+                  n_projections= N_PROJECTIONS, 
+                  phantoms=PHANTOMS)

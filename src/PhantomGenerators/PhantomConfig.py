@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
+
 @dataclass 
 class phantomConfig:
     gray_values: tuple[Any, ...] = (0., 72.5, 145., 222.5, 255.)

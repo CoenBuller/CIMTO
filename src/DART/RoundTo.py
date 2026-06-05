@@ -4,8 +4,8 @@ import os
 
 from typing import Any
 from numpy.typing import NDArray
-from ReconstructionAlgorithms import SIRT
-from Sinograms import Sinogram
+from src.DART.ReconstructionAlgorithms import SIRT
+from src.DART.Sinograms import Sinogram
 from scipy.ndimage import gaussian_filter
 
 

@@ -8,7 +8,7 @@ from os.path import isdir
 from os import mkdir
 from PIL import Image
 from skimage import draw
-from ReconstructionAlgorithms import SIRT, FBP
+from src.DART.ReconstructionAlgorithms import SIRT, FBP
 
 
 def PoissonNoise(sinogram: NDArray, SNR: int) -> NDArray:

@@ -5,10 +5,9 @@ import matplotlib.pyplot as plt
 
 from numpy.typing import NDArray
 from numpy.random import Generator
-from PhantomConfig import phantomConfig
+from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from skimage.draw import ellipse
-from PhantomGenerators import PlotPhantom 
 from scipy.ndimage import gaussian_filter
 
 

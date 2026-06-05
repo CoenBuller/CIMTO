@@ -5,7 +5,7 @@ import os
 from scipy.ndimage import gaussian_filter1d
 from skimage import draw
 from numpy.typing import NDArray
-from PhantomConfig import phantomConfig
+from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 
 def PlotPhantom(img: NDArray) -> None:
