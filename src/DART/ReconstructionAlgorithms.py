@@ -2,6 +2,20 @@ import astra
 import numpy as np
 from typing import Any
 
+def GenerateAngles(angle_order: str, n: int):
+    """Generate projection angles according to the chosen ordering strategy."""
+
+    if angle_order == "sequential":
+        return np.linspace(0, np.pi, n, endpoint=False)
+
+    elif angle_order == "maximally_separated":
+        # Golden-ratio sampling: each new angle maximally separates from previous
+        golden = np.pi * (3.0 - np.sqrt(5.0))
+        angles = (np.arange(n) * golden) % (stop - start) + start
+        return np.sort(angles)
+
+    else:
+        return
 def SART(sino_id: int,
          vol_geom: dict[str, dict],
          projector_id: int,
@@ -13,7 +27,8 @@ def SART(sino_id: int,
          vol_data: float | np.ndarray = 0,
          iters: int = 200,
          relaxation: float = 1.0,
-
+         
+         n_projections: int = 10,
          angle_ordering: str = "randomized",
          mask=None,
          use_gpu: bool = False,) -> np.ndarray:
@@ -29,13 +44,24 @@ def SART(sino_id: int,
     if mask is None:
         mask = np.ones(img_shape)
 
+    if angle_ordering != "randomized":
+        projection_order = "custom"
+        ordering_list = GenerateAngles(angle_ordering, n=n_projections)
+    else:
+        projection_order = "random"
+
     mask_id = astra.data2d.create('-vol', vol_geom, mask)
     alg_cfg['option'] = {
         'ReconstructionMaskId': mask_id,
         'MaxConstraint': max_constraint,
         'MinConstraint': min_constraint,
         'Relaxation': relaxation,
+        'ProjectionOrder': projection_order,           
     }
+
+    if projection_order == "custom":
+        alg_cfg['option']['ProjectionOrderList'] = ordering_list
+
 
     # Run
     algorithm_id = astra.algorithm.create(alg_cfg)
