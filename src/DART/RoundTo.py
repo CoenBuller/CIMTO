@@ -9,18 +9,9 @@ from src.DART.Sinograms import Sinogram
 from scipy.ndimage import gaussian_filter
 
 
-def GaussianKernel(size, sigma):
-    """Creates a 2D Gaussian filter kernel."""
-    ax = np.linspace(-(size - 1) / 2., (size - 1) / 2., size)
-    xx, yy = np.meshgrid(ax, ax)
-    
-    # Calculate the 2D Gaussian formula
-    kernel = np.exp(-0.5 * (np.square(xx) + np.square(yy)) / np.square(sigma))
-    
-    # Normalize the kernel so its elements sum to 1
-    return kernel / np.sum(kernel)
 
-def Smooth(phantom: NDArray, sigma: float) -> NDArray:
+def Smooth(phantom: NDArray, sigma: float, free_mask: NDArray) -> NDArray:
+    phantom = phantom * free_mask.astype(int)
     smooth = gaussian_filter(input=phantom, sigma=sigma)
     return smooth
 

@@ -56,7 +56,7 @@ def MakePhantom(cfg: phantomConfig, rng: Generator, phantom_generator: Callable)
     return phantom_generator(cfg=cfg, rng=rng)
 
 def RunExperiment(dart_config: Config, 
-                  internal_arm_its: list[float] = INTERNAL_ARM_ITS, 
+                  internal_arm_its: list[int] = INTERNAL_ARM_ITS, 
                   n_projections: list[int] = N_PROJECTIONS, 
                   phantoms=PHANTOMS) -> None:
 

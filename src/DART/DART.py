@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import astra
 import time
+import argparse
 
 from numpy.typing import NDArray
 from typing import Callable
@@ -64,7 +65,8 @@ def DART(phantom: NDArray,
     
     # Smooth and segmentate
     if smoothing:
-        reconstruction = Smooth(reconstruction, sigma=smoothing)
+        reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(reconstruction))
+    continuous_reconstruction = reconstruction.copy()          # <-- add this
     reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
     free_mask = ChooseFreePixels(reconstruction, p)
 
@@ -96,12 +98,16 @@ def DART(phantom: NDArray,
                                                 vol_geom=vol_geom, 
                                                 projector_geom=proj_geom)
             
+
+            vol_init = reconstruction.copy()                          
+            vol_init[free_mask] = continuous_reconstruction[free_mask]
+            
             # Solve b_res = A(x_free)
             reconstruction = SART(
                                   sino_id=residual_sino_id,
                                   mask=free_mask,
                                   vol_geom=vol_geom,
-                                  vol_data=reconstruction,
+                                  vol_data=vol_init,
                                   projector_id=projector_id,
                                   iters=arm_iters,
                                   min_constraint=np.min(graylevels),
@@ -112,8 +118,9 @@ def DART(phantom: NDArray,
 
             # Smooth the reconstruction
             if smoothing:
-                reconstruction = Smooth(reconstruction, sigma=smoothing)
+                reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(reconstruction))
 
+            continuous_reconstruction = reconstruction.copy()
             # Segment pixel values of reconstruction and determine new set of free pixels
             reconstruction = RoundTo(reconstruction, graylevels)
             free_mask = ChooseFreePixels(reconstruction, p)
@@ -134,21 +141,23 @@ def DART(phantom: NDArray,
     return reconstruction, results
 
 if __name__ == "__main__":
-    phantom_path = os.path.join("Test_phantoms", "granular_phantom_single_grayvalues.npz")
-    phantom_arrays = np.load(phantom_path)
-    lst = phantom_arrays.files
-    item = lst[0]
-    phantom = phantom_arrays[item]
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-type', choices=['1', '2', '3', '4'], default='0')
+    parser.add_argument('-instance', choices=['1', '2', '3', '4', '5', '6', '7', '8', '9'] , default='0')
+    args = parser.parse_args()
+    phantom_path = os.path.join(f"TestPhantoms", f"phantom_{args.type}", f"{args.instance}.npy")
+    phantom = np.load(phantom_path)
 
     reconstruction, _ = DART(phantom=phantom,
                           graylevels=np.unique(phantom),
-                          p=0.5,
-                          dart_iters=10,
+                          p=0.85,
+                          dart_iters=200,
 
-                          arm_iters=20,
-                          init_arm_iters=2000,
+                          arm_iters=3,
+                          init_arm_iters=10,
 
-                          angles=np.linspace(0, np.pi, 20),
+                          angles=np.linspace(0, np.pi, 10, endpoint=True),
                           detector_spacing=1,
                           n_detectors=512,
 
@@ -156,7 +165,9 @@ if __name__ == "__main__":
                           use_gpu=False,
                           
                           SNR=None,
-                          noise_func=PoissonNoise)
+                          noise_func=PoissonNoise,
+                          
+                          smoothing=2)
 
 
     print('\n',"="*75)
