@@ -51,7 +51,6 @@ def Reconstruct(phantom: NDArray, cfg: Config):
 
 def RunRelaxation(
     dart_config: Config,
-    rng: Generator,
     relaxation_values: list[float] = RELAXATION_VALUES,
     n_projections: list[int] = N_PROJECTIONS,
     phantoms=PHANTOMS,
@@ -87,10 +86,8 @@ def RunRelaxation(
 
 if __name__ == "__main__":
     dart_cfg = Config()
-    rng = np.random.default_rng(seed=dart_cfg.seed)
     RunRelaxation(
         dart_config=dart_cfg,
-        rng=rng,
         relaxation_values=RELAXATION_VALUES,
         n_projections=N_PROJECTIONS,
         phantoms=PHANTOMS,

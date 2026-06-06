@@ -3,6 +3,9 @@ from Experiments.TestInitialARM import RunInitialARM
 from Experiments.TestInternalARM import RunInternalARM
 from Experiments.TestSARTRelaxation import RunRelaxation
 from Experiments.TestSmoothing import RunSmoothing
+from src.DART.DARTConfig import Config
+
+import numpy as np
 
 EXPERIMENTS = {"Smoothing": RunSmoothing,
                "Relaxation": RunRelaxation,
@@ -11,11 +14,9 @@ EXPERIMENTS = {"Smoothing": RunSmoothing,
                "Projection Ordering": RunAngleOrdering}
 
 for experiment in EXPERIMENTS:
-    phantom_cfg = phantomConfig()
     dart_cfg = Config()
-    rng = np.random.default_rng(seed=dart_cfg.seed)
     print(f"Starting experiment: {experiment}")
-    EXPERIMENTS[experiment]()
+    EXPERIMENTS[experiment](dart_config=dart_cfg)
 
 
 

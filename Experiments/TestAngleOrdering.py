@@ -37,7 +37,7 @@ def GenerateAngles(cfg: Config) -> NDArray:
     if cfg.angle_order == "sequential":
         return np.linspace(start, stop, n, endpoint=False)
 
-    elif cfg.angle_order == "randomized":
+    elif cfg.angle_order == "random":
         return np.sort(rng.uniform(start, stop, size=n))
 
     elif cfg.angle_order == "maximally_separated":
@@ -58,7 +58,8 @@ def Reconstruct(phantom: NDArray, cfg: Config):
         dart_iters=cfg.dart_iters,
         init_arm_iters=cfg.init_arm_iters,
         arm_iters=cfg.arm_iters,
-        angles=GenerateAngles(cfg),
+        angle_ordering=cfg.angle_order,
+        angles=np.linspace(cfg.angle_range[0], cfg.angle_range[1], cfg.n_angles, endpoint=False),
         detector_spacing=1,
         n_detectors=512,
         SNR=cfg.snr,
@@ -72,7 +73,6 @@ def Reconstruct(phantom: NDArray, cfg: Config):
 
 def RunAngleOrdering(
     dart_config: Config,
-    rng: Generator,
     angle_orderings: list[str] = ANGLE_ORDERINGS,
     n_projections: list[int] = N_PROJECTIONS,
     phantoms=PHANTOMS,
@@ -108,10 +108,8 @@ def RunAngleOrdering(
 
 if __name__ == "__main__":
     dart_cfg = Config()
-    rng = np.random.default_rng(seed=dart_cfg.seed)
     RunAngleOrdering(
         dart_config=dart_cfg,
-        rng=rng,
         angle_orderings=ANGLE_ORDERINGS,
         n_projections=N_PROJECTIONS,
         phantoms=PHANTOMS,

@@ -52,12 +52,8 @@ def Reconstruct(phantom: NDArray, cfg: Config):
     
     return results
 
-def MakePhantom(cfg: phantomConfig, rng: Generator, phantom_generator: Callable) -> NDArray:
-    return phantom_generator(cfg=cfg, rng=rng)
-
 def RunSmoothing(
                   dart_config: Config, 
-                  rng: Generator, 
                   smoothing_values: list[float] = SMOOTHING_VALUES, 
                   n_projections: list[int] = N_PROJECTIONS, 
                   phantoms=PHANTOMS) -> None:
@@ -91,9 +87,7 @@ def RunSmoothing(
 if __name__ == "__main__":
 
     dart_cfg = Config()
-    rng = np.random.default_rng(seed=dart_cfg.seed)
     RunSmoothing( dart_config=dart_cfg, 
-                  rng=rng, 
                   smoothing_values = SMOOTHING_VALUES, 
                   n_projections= N_PROJECTIONS, 
                   phantoms=PHANTOMS)

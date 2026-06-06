@@ -52,8 +52,6 @@ def Reconstruct(phantom: NDArray, cfg: Config):
     
     return results
 
-def MakePhantom(cfg: phantomConfig, rng: Generator, phantom_generator: Callable) -> NDArray:
-    return phantom_generator(cfg=cfg, rng=rng)
 
 def RunInternalARM(dart_config: Config, 
                   internal_arm_its: list[int] = INTERNAL_ARM_ITS, 
@@ -89,7 +87,6 @@ def RunInternalARM(dart_config: Config,
 if __name__ == "__main__":
 
     dart_cfg = Config()
-    rng = np.random.default_rng(seed=dart_cfg.seed)
     RunInternalARM(dart_config=dart_cfg, 
                   internal_arm_its = INTERNAL_ARM_ITS, 
                   n_projections= N_PROJECTIONS, 
