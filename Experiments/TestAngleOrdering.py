@@ -70,8 +70,7 @@ def Reconstruct(phantom: NDArray, cfg: Config):
     return results
 
 
-def RunExperiment(
-    phantom_cfg: phantomConfig,
+def RunAngleOrdering(
     dart_config: Config,
     rng: Generator,
     angle_orderings: list[str] = ANGLE_ORDERINGS,
@@ -108,11 +107,9 @@ def RunExperiment(
 
 
 if __name__ == "__main__":
-    phantom_cfg = phantomConfig()
     dart_cfg = Config()
     rng = np.random.default_rng(seed=dart_cfg.seed)
-    RunExperiment(
-        phantom_cfg=phantom_cfg,
+    RunAngleOrdering(
         dart_config=dart_cfg,
         rng=rng,
         angle_orderings=ANGLE_ORDERINGS,

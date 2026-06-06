@@ -13,7 +13,7 @@ class Config:
     gray_values: tuple[Any, ...] = (0., 72.5, 145., 222.5, 255.)
     p: float = 0.85 # Must be in [0, 1]
     dart_iters: int = 200 
-    gpu: bool = True
+    gpu: bool = False
 
     # Smoothing 
     sigma: float = 1

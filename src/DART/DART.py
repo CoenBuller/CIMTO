@@ -42,7 +42,7 @@ def DART(phantom: NDArray,
         ) -> tuple[NDArray, dict[str, list[float]]]:
     
 
-    results = {"K_error" : [], "Abs_error": []}
+    results = {"K_error" : [], "Abs_error": [], "time": 0}
 
     projector_id, sino_id, sinogram_img, vol_geom, proj_geom = Sinogram(
                                                                         phantom=phantom,
@@ -62,8 +62,7 @@ def DART(phantom: NDArray,
                           projector_id=projector_id,
                           iters=init_arm_iters,
                           relaxation=relaxation,
-                          n_projections=len(angles),
-                          angle_ordering=angle_ordering,
+                          projection_order=angle_ordering,
                           min_constraint=np.min(graylevels),
                           max_constraint=np.max(graylevels),
                           use_gpu=use_gpu
@@ -96,7 +95,6 @@ def DART(phantom: NDArray,
 
         results["Abs_error"].append(abs_error)
         results["K_error"].append(K_error)
-        
         for i in range(dart_iters - 1):
 
             # Calculate residual sinogram b_res = b_0 - A(x_fixed)
@@ -119,8 +117,7 @@ def DART(phantom: NDArray,
                                   vol_data=vol_init,
                                   projector_id=projector_id,
                                   iters=arm_iters,
-                                  angle_ordering=angle_ordering,
-                                  n_projections=len(angles),
+                                  projection_order=angle_ordering,
                                   relaxation=relaxation,
                                   min_constraint=np.min(graylevels),
                                   max_constraint=np.max(graylevels),
@@ -150,7 +147,7 @@ def DART(phantom: NDArray,
             results["Abs_error"].append(abs_error)
             results["K_error"].append(K_error)
 
-    
+    results["Time"] = time.time() - time0 
     astra.projector.delete(projector_id)
     return reconstruction, results
 
