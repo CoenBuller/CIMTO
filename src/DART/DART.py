@@ -173,7 +173,7 @@ if __name__ == "__main__":
                           n_detectors=512,
                           angle_ordering="interleaved",
                           
-                          relaxation=0.5,
+                          relaxation=1,
                           vol_data=0,
                           use_gpu=False,
                           

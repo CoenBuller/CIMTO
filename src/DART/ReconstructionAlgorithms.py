@@ -69,9 +69,10 @@ def SART(sino_id: int,
         # custom order (e.g., 'interleaved')
         n_angles = astra.data2d.get(sino_id).shape[0]
         order_list = _projection_order_list(n_angles, projection_order)
-        print(order_list)
+        order_array = np.array(order_list).flatten()        
+        print(order_array)
         options['ProjectionOrder'] = 'custom'
-        options['ProjectionOrderList'] = order_list   # must be a Python list
+        options['ProjectionOrderList'] = order_array
 
     alg_cfg['option'] = options
 
