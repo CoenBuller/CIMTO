@@ -171,8 +171,9 @@ if __name__ == "__main__":
                           angles=np.linspace(0, np.pi, 10, endpoint=True),
                           detector_spacing=1,
                           n_detectors=512,
-                          angle_ordering="sequential",
-                    
+                          angle_ordering="interleaved",
+                          
+                          relaxation=0.5,
                           vol_data=0,
                           use_gpu=False,
                           
