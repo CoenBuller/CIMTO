@@ -65,7 +65,8 @@ def DART(phantom: NDArray,
                           projection_order=angle_ordering,
                           min_constraint=np.min(graylevels),
                           max_constraint=np.max(graylevels),
-                          use_gpu=use_gpu
+                          use_gpu=use_gpu,
+                          proj_geom=proj_geom,
                           )
     
     # Smooth and segmentate
@@ -121,7 +122,8 @@ def DART(phantom: NDArray,
                                   relaxation=relaxation,
                                   min_constraint=np.min(graylevels),
                                   max_constraint=np.max(graylevels),
-                                  use_gpu=use_gpu
+                                  use_gpu=use_gpu,
+                                  proj_geom=proj_geom,
                                  )
 
 

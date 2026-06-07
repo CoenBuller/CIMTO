@@ -12,7 +12,7 @@ from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from typing import Callable
 from numpy.typing import NDArray
-from numpy.random import Generator
+from numpy.random import Generatord
 
 
 INIT_ARM_ITS = [5,10,50,200]
@@ -74,7 +74,7 @@ def RunInitialARM(dart_config: Config,
                 for i in range(N_ITERS):
                     path = os.path.join("TestPhantoms", str(PHANTOM_NAMES[phantom_gen]), str(i)+".npy")
                     phantom = np.load(path)
-                    dart_cfg.gray_values = tuple(value for value in np.unique(phantom))
+                    dart_config.gray_values = tuple(value for value in np.unique(phantom))
                     results[i] = Reconstruct(phantom, cfg=dart_config)
 
                 save_path = os.path.join(save_dir, f"{file_name}.pkl")

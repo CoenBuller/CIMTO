@@ -5,13 +5,15 @@ from Experiments.TestSARTRelaxation import RunRelaxation
 from Experiments.TestSmoothing import RunSmoothing
 from src.DART.DARTConfig import Config
 
+
 import numpy as np
 
-EXPERIMENTS = {"Smoothing": RunSmoothing,
+EXPERIMENTS = {"Projection Ordering": RunAngleOrdering,
+               "Smoothing": RunSmoothing,
                "Relaxation": RunRelaxation,
                "Internal ARM": RunInternalARM,
-               "Initial ARM": RunInitialARM,
-               "Projection Ordering": RunAngleOrdering}
+               "Initial ARM": RunInitialARM,}
+               
 
 for experiment in EXPERIMENTS:
     dart_cfg = Config()

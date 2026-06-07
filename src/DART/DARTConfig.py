@@ -26,7 +26,7 @@ class Config:
     # Sinogram params
     n_angles: int = 10
     angle_range: tuple[float, float] = (0, np.pi)
-    angle_order: str = "sequential"  # "sequential" | "random" | "maximally_separated"
+    angle_order: str = "random"  # "sequential" | "random" | "maximally_separated"
 
     # Noise 
     snr: int | None = None

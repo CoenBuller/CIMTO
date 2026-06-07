@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 from numpy.random import Generator
 
 
-ANGLE_ORDERINGS = ["sequential", "randomized", "maximally_separated"]
+ANGLE_ORDERINGS = ["sequential", "random", "interleaved"]
 N_PROJECTIONS = [10, 25]
 PHANTOMS = [make_phantom2, make_phantom1, BinaryGranularPhantom, CircleWithGeoShapes]
 N_ITERS = 10
