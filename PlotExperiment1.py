@@ -159,29 +159,41 @@ def print_time_table():
         param_vals = exp_cfg["param_values"]
         for pv in param_vals:
             for n_proj in PROJECTIONS:
+                all_times = []
                 for phantom in PHANTOMS:
                     _, times = load_results(exp_type, pv, n_proj, phantom)
                     if times:
-                        avg_time = np.mean(times)
-                        # Show parameter as 0 for None in the table for clarity
-                        param_display = 0 if pv is None else pv
-                        rows.append({
-                            "Experiment": exp_type,
-                            "Parameter": param_display,
-                            "Projections": n_proj,
-                            "Phantom": phantom,
-                            "Avg time (s)": avg_time
-                        })
+                        all_times.extend(times)  # Collect all iteration times across phantoms
+                
+                if all_times:
+                    avg_time = np.mean(all_times)
+                    std_time = np.std(all_times)
+                    param_display = 0 if pv is None else pv
+                    rows.append({
+                        "Experiment": exp_type,
+                        "Parameter": param_display,
+                        "Projections": n_proj,
+                        "Avg time (s)": avg_time,
+                        "Std time (s)": std_time
+                    })
+    
     if not rows:
         print("No time data found.")
         return
 
     df = pd.DataFrame(rows)
-    pivot = df.pivot_table(index=["Experiment", "Parameter", "Projections"],
-                           columns="Phantom", values="Avg time (s)")
-    print("\n=== Average reconstruction times (seconds) ===\n")
-    print(pivot.round(3))
+    # Pivot table showing average time for each (Experiment, Parameter, Projections)
+    pivot_avg = df.pivot_table(index=["Experiment", "Parameter", "Projections"],
+                               values="Avg time (s)", aggfunc='first')
+    pivot_std = df.pivot_table(index=["Experiment", "Parameter", "Projections"],
+                               values="Std time (s)", aggfunc='first')
+    
+    print("\n=== Average reconstruction times (seconds) averaged over phantoms ===\n")
+    print(pivot_avg.round(3))
+    print("\n=== Standard deviation across phantoms and iterations ===\n")
+    print(pivot_std.round(3))
 
+    # Save to CSV
     csv_path = os.path.join(OUTPUT_DIR, "reconstruction_times.csv")
     df.to_csv(csv_path, index=False)
     print(f"\nTime table saved to {csv_path}")
