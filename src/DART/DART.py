@@ -153,36 +153,64 @@ def DART(phantom: NDArray,
     astra.projector.delete(projector_id)
     return reconstruction, results
 
-if __name__ == "__main__":
-
+def ParseArgs():
     parser = argparse.ArgumentParser()
+
+    # Phantom type
     parser.add_argument('-type', choices=['1', '2', '3', '4'], default='1')
     parser.add_argument('-instance', choices=['1', '2', '3', '4', '5', '6', '7', '8', '9'] , default='0')
+
+    # DART parameters
+    parser.add_argument('-p', type=float, default=0.85)
+    parser.add_argument('-dart_iters', type=int, default=200)
+
+    parser.add_argument('-arm_iters', type=int, default=3)
+    parser.add_argument('-init_arm_iters', type=int, default=10)
+
+    parser.add_argument('-lower_angle', type=float, default=0)
+    parser.add_argument('-upper_angle', type=float, default=np.pi)
+    parser.add_argument('-n_angles', type=int, default=25)
+  
+
+    parser.add_argument('-angle_ordering', type=str, default='random')
+    parser.add_argument('-relaxation', type=float, default=1)
+    parser.add_argument('-gpu', type=bool, default=False)
+
+    parser.add_argument('-snr', type=int, default=None)
+    parser.add_argument('-noise_func', type=str, default='poisson')
+
+    parser.add_argument('-smoothing', type=float, default=1)
+
     args = parser.parse_args()
+    return args
+
+if __name__ == "__main__":
+    noise_funcs = {'poisson': PoissonNoise,}
+    args = ParseArgs()
     phantom_path = os.path.join(f"TestPhantoms", f"phantom_{args.type}", f"{args.instance}.npy")
     phantom = np.load(phantom_path)
 
     reconstruction, _ = DART(phantom=phantom,
                           graylevels=np.unique(phantom),
-                          p=0.85,
-                          dart_iters=200,
+                          p=args.p,
+                          dart_iters=args.dart_iters,
 
-                          arm_iters=3,
-                          init_arm_iters=10,
+                          arm_iters=args.arm_iters,
+                          init_arm_iters=args.init_arm_iters,
 
-                          angles=np.linspace(0, np.pi, 10, endpoint=True),
+                          angles=np.linspace(args.lower_angle, args.upper_angle, args.n_angles, endpoint=True),
                           detector_spacing=1,
                           n_detectors=512,
-                          angle_ordering="interleaved",
+                          angle_ordering=args.angle_ordering,
                           
-                          relaxation=1,
+                          relaxation=args.relaxation,
                           vol_data=0,
-                          use_gpu=False,
+                          use_gpu=args.gpu,
                           
-                          SNR=None,
-                          noise_func=PoissonNoise,
+                          SNR=args.snr,
+                          noise_func=noise_funcs[args.noise_func],
                           
-                          smoothing=0.5)
+                          smoothing=args.smoothing)
 
 
     print('\n',"="*75)
