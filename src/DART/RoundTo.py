@@ -11,9 +11,12 @@ from scipy.ndimage import gaussian_filter
 
 
 def Smooth(phantom: NDArray, sigma: float, free_mask: NDArray) -> NDArray:
-    phantom = phantom * free_mask.astype(int)
-    smooth = gaussian_filter(input=phantom, sigma=sigma)
-    return smooth
+    smoothed_full = gaussian_filter(input=phantom, sigma=sigma)
+
+    output = phantom.copy()
+    output[free_mask] = smoothed_full[free_mask]
+    return output
+
 
 def RoundTo(phantom: NDArray, graylevels: NDArray) -> NDArray:
     """

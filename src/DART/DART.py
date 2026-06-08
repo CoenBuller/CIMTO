@@ -68,12 +68,6 @@ def DART(phantom: NDArray,
                           use_gpu=use_gpu,
                           proj_geom=proj_geom,
                           )
-    
-    # Smooth and segmentate
-    if smoothing:
-        temp_rounded = RoundTo(phantom=reconstruction, graylevels=graylevels)
-        edge_mask = EdgeDetection(temp_rounded)
-        reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(edge_mask))
 
     continuous_reconstruction = reconstruction.copy()          
     reconstruction = RoundTo(phantom=reconstruction, graylevels=graylevels)
@@ -129,9 +123,7 @@ def DART(phantom: NDArray,
 
             # Smooth the reconstruction
             if smoothing:
-                temp_rounded = RoundTo(reconstruction, graylevels)
-                edge_mask = EdgeDetection(temp_rounded)
-                reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=np.ones_like(edge_mask))
+                reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=free_mask)
 
             continuous_reconstruction = reconstruction.copy()
             # Segment pixel values of reconstruction and determine new set of free pixels

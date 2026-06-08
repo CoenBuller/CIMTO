@@ -12,21 +12,17 @@ from src.DART.ReconstructionAlgorithms import SIRT, FBP
 
 
 def PoissonNoise(sinogram: NDArray, SNR: int) -> NDArray:
-    A_max = sinogram.max()
-    A_norm = sinogram / A_max
+    A_mean = sinogram.mean()            
+    A_norm = sinogram/A_mean
 
     I0 = SNR**2 / np.exp(-A_norm).mean()
 
     measured_intensity = I0 * np.exp(-A_norm)
-    
-    # Add Poisson noise
+
     noisy_counts = np.random.poisson(measured_intensity).astype(np.float64)
-    
-    # Handle zero count
     noisy_counts = np.maximum(noisy_counts, 1)
-    
-    # Convert back to attenuation with correct scale
-    sinogram_noisy = A_max * -np.log(noisy_counts / I0)
+
+    sinogram_noisy = A_mean * -np.log(noisy_counts / I0)  
     return sinogram_noisy
 
 
