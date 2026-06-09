@@ -79,7 +79,8 @@ def DART(phantom: NDArray,
         print("Initial reconstruction has been made. Will now continue with the DART loop")
         print(f"Initial reconstruction took {(time.time() - time0):.3f}s, for {init_arm_iters} iterations")
         print("="*75, '\n')
-        
+    
+    i = 1
     with tqdm(total=dart_iters, desc="DART", unit="iter") as pbar:
 
         K_error = np.sum((reconstruction != phantom))
@@ -124,7 +125,7 @@ def DART(phantom: NDArray,
             # Smooth the reconstruction
             if smoothing:
                 reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=free_mask)
-
+            
             continuous_reconstruction = reconstruction.copy()
             # Segment pixel values of reconstruction and determine new set of free pixels
             reconstruction = RoundTo(reconstruction, graylevels)
@@ -215,17 +216,17 @@ if __name__ == "__main__":
     not_in_edge = np.zeros_like(edge)
     not_in_edge[((phantom != reconstruction) not in edge)] = 1
 
-    fig, ax = plt.subplots(1, 3)
+    fig, ax = plt.subplots(1, 2)
     ax[0].axis("off")
     ax[1].axis("off")
-    ax[2].axis("off")
+    # ax[2].axis("off")
 
     ax[0].imshow(reconstruction, cmap='viridis')
     ax[0].set_title("Reconstrction")
     ax[1].imshow(phantom, cmap='viridis')
     ax[1].set_title("Phantom")
-    ax[2].imshow(phantom != reconstruction, cmap='viridis')
-    ax[2].set_title("Difference image")
+    # ax[2].imshow(phantom != reconstruction, cmap='viridis')
+    # ax[2].set_title("Difference image")
     plt.tight_layout()
     plt.savefig("DART_reconstruction")
     # plt.show()
