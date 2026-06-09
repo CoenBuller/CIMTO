@@ -12,7 +12,7 @@ from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from typing import Callable
 from numpy.typing import NDArray
-from numpy.random import Generatord
+from numpy.random import Generator
 
 
 INIT_ARM_ITS = [5,10,50,200]

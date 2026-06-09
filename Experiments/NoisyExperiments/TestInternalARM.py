@@ -16,14 +16,12 @@ from numpy.random import Generator
 
 
 INTERNAL_ARM_ITS = [1,3,5,10,20]
-N_PROJECTIONS = [10, 25]
-PHANTOMS = [make_phantom2, make_phantom1, BinaryGranularPhantom, CircleWithGeoShapes]
+SNR = [10, 20, 30]
+PHANTOMS = [make_phantom2, CircleWithGeoShapes]
 N_ITERS = 10
 
 PHANTOM_NAMES = {
-    make_phantom1: "phantom_1",
     make_phantom2: "phantom_2",
-    BinaryGranularPhantom: "phantom_3",
     CircleWithGeoShapes: "phantom_4",
 }
 
@@ -55,14 +53,14 @@ def Reconstruct(phantom: NDArray, cfg: Config):
 
 def RunInternalARM(dart_config: Config, 
                   internal_arm_its: list[int] = INTERNAL_ARM_ITS, 
-                  n_projections: list[int] = N_PROJECTIONS, 
+                  snr: list[int] = SNR, 
                   phantoms=PHANTOMS) -> None:
 
     for internal_arm in internal_arm_its:
         # Internal ARM iterations
         dart_config.arm_iters = internal_arm
 
-        for n in n_projections:
+        for n in snr:
             # SNR
             dart_config.snr = n
 

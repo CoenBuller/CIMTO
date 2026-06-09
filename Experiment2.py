@@ -6,9 +6,9 @@ from src.DART.DARTConfig import Config
 
 import numpy as np
 
-EXPERIMENTS = {"Smoothing": RunSmoothing,
-               "Relaxation": RunRelaxation,
-               "Internal ARM": RunInternalARM,}               
+EXPERIMENTS = {"Internal ARM": RunInternalARM,
+               "Smoothing": RunSmoothing,
+               "Relaxation": RunRelaxation,}            
 
 for experiment in EXPERIMENTS:
     dart_cfg = Config()
