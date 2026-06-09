@@ -8,10 +8,10 @@ from typing import Dict, List, Tuple, Any
 # GLOBAL PLOTTING PARAMETERS - Adjust these as needed
 # ============================================================================
 # Font sizes
-TITLE_SIZE = 20          # Size for subplot titles
+TITLE_SIZE = 23          # Size for subplot titles
 SUPTITLE_SIZE = 16       # Size for overall figure super title
-AXIS_LABEL_SIZE = 20     # Size for x and y axis labels
-TICK_LABEL_SIZE = 20     # Size for tick labels
+AXIS_LABEL_SIZE = 23     # Size for x and y axis labels
+TICK_LABEL_SIZE = 23     # Size for tick labels
 LEGEND_FONT_SIZE = 18     # Size for legend text
 
 # Figure dimensions
@@ -19,10 +19,10 @@ FIGURE_WIDTH = 20        # Width of the entire figure in inches
 FIGURE_HEIGHT_PER_ROW = 7# Height per experiment row in inches
 
 # Marker and line settings
-MARKER_SIZE = 6          # Size of markers in line plots
-LINE_WIDTH = 2           # Width of lines in line plots
+MARKER_SIZE = 12          # Size of markers in line plots
+LINE_WIDTH = 4           # Width of lines in line plots
 BAR_WIDTH = 0.3          # Width of bars in bar plots
-ERRORBAR_CAPSIZE = 3     # Size of error bar caps
+ERRORBAR_CAPSIZE = 5     # Size of error bar caps
 
 # Grid and transparency
 GRID_ALPHA = 0.6         # Transparency of grid lines
@@ -193,7 +193,6 @@ def plot_all_experiments_combined():
     save_path = os.path.join(OUTPUT_DIR, "all_experiments_k_error_SNR.png")
     plt.savefig(save_path, dpi=DPI, bbox_inches='tight')
     print(f"Figure saved to {save_path}")
-    plt.show()
 
 # ============================================================================
 # Main function
