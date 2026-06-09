@@ -150,7 +150,8 @@ def ParseArgs():
 
     # Phantom type
     parser.add_argument('-type', choices=['1', '2', '3', '4'], default='1')
-    parser.add_argument('-instance', choices=['1', '2', '3', '4', '5', '6', '7', '8', '9'] , default='0')
+    parser.add_argument('-instance', choices=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] , default='0')
+    parser.add_argument('-verbal', type=bool, default=False)
 
     # DART parameters
     parser.add_argument('-p', type=float, default=0.85)
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     phantom_path = os.path.join(f"TestPhantoms", f"phantom_{args.type}", f"{args.instance}.npy")
     phantom = np.load(phantom_path)
 
-    reconstruction, _ = DART(phantom=phantom,
+    reconstruction, results = DART(phantom=phantom,
                           graylevels=np.unique(phantom),
                           p=args.p,
                           dart_iters=args.dart_iters,
@@ -202,28 +203,42 @@ if __name__ == "__main__":
                           SNR=args.snr,
                           noise_func=noise_funcs[args.noise_func],
                           
-                          smoothing=args.smoothing)
+                          smoothing=args.smoothing,
+                          verbal=args.verbal)
 
 
     print('\n',"="*75)
     print(f"Final K: {np.sum(reconstruction != phantom)}")
     print("="*75)
-
+    
     edge = EdgeDetection(reconstruction)
     not_in_edge = np.zeros_like(edge)
     not_in_edge[((phantom != reconstruction) not in edge)] = 1
-    fig, ax = plt.subplots(2, 3)
-    ax[0,0].imshow(phantom)
-    ax[0,0].set_title("Original phantom")
-    ax[0,1].imshow(reconstruction)
-    ax[0,1].set_title("Reconstructed phantom")
-    ax[1,0].imshow(phantom != reconstruction)
-    ax[1,0].set_title("Difference phantom")
-    ax[1,1].imshow(edge)
-    ax[1,1].set_title("Edges")
-    ax[1,2].imshow(not_in_edge)
-    ax[1,2].set_title(f"All the pixel values that are wrong, that are not part of the edge. N={np.sum(not_in_edge)}")
-    plt.savefig("DART_reconstruction")
-    plt.show()
 
+    fig, ax = plt.subplots(1, 3)
+    ax[0].axis("off")
+    ax[1].axis("off")
+    ax[2].axis("off")
+
+    ax[0].imshow(reconstruction, cmap='gray')
+    ax[0].set_title("Reconstrction")
+    ax[1].imshow(edge, cmap='gray')
+    ax[1].set_title("Edge image")
+    ax[2].imshow(phantom != reconstruction, cmap='gray')
+    ax[2].set_title("Difference image")
+    plt.tight_layout()
+    plt.savefig("DART_reconstruction")
+    # plt.show()
+
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
+    ax.plot(range(len(results["K_error"])), results["K_error"], 
+            linewidth=3, color='#2E86AB', label='K-error')
+    ax.set_xlabel("Iterations", fontsize=18)
+    ax.set_ylabel("K-error", fontsize=18)
+    ax.grid(True, linestyle='--', alpha=0.6)
+    ax.tick_params(axis='both', labelsize=18)
+    ax.legend(loc='best', fontsize=18, framealpha=0.9)
+    # ax.set_yscale('log')  # often helpful for convergence plots
+    plt.tight_layout()
+    plt.savefig("convergence_plot", dpi=300, bbox_inches='tight') 
 
