@@ -3,7 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 args = ParseArgs()
-phantom_path = os.path.join(f"TestPhantoms", f"phantom_{4}", f"{0}.npy")
+phantom_path = os.path.join(f"TestPhantoms", f"phantom_{3}", f"{0}.npy")
 phantom = np.load(phantom_path)
 
 reconstruction, results = DART(phantom=phantom,
