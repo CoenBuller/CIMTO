@@ -35,8 +35,8 @@ DPI = 300                # Resolution for saved figures
 # ============================================================================
 # Experiment configuration
 # ============================================================================
-BASE_RESULTS_DIR = "./Results"          # where Config.save_dir points to
-OUTPUT_DIR = os.path.join("Results", "Experiment_2")
+BASE_RESULTS_DIR = "./Results2"          # where Config.save_dir points to
+OUTPUT_DIR = os.path.join("Results2", "Experiment_2")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # SNR values used in Experiment2
@@ -64,8 +64,10 @@ EXPERIMENTS = {
 }
 
 # Only phantoms 2 and 4 (matching Experiment2)
-PHANTOMS = ["phantom_2", "phantom_4"]
-PHANTOM_NAMES ={"phantom_2": 'Phantom (2)', 
+PHANTOMS = ["phantom_1", "phantom_2", "phantom_3", "phantom_4"]
+PHANTOM_NAMES ={"phantom_1": "Phantom (1)",
+                "phantom_2": 'Phantom (2)', 
+                "phantom_3": "Phantom (3)",
                 "phantom_4": 'Phantom (4)'}
 N_ITERS = 10
 

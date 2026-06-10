@@ -34,4 +34,4 @@ class Config:
 
     # RNG and results
     seed: int = 69
-    save_dir: str = "Results/"
+    save_dir: str = "Results2/"

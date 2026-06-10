@@ -17,12 +17,15 @@ from numpy.random import Generator
 
 SMOOTHING_VALUES = [None, 0.5, 1, 2, 3]
 SNR = [10, 20, 30]
-PHANTOMS = [make_phantom2, CircleWithGeoShapes]
+PHANTOMS = [make_phantom1, make_phantom2, BinaryGranularPhantom, CircleWithGeoShapes]
 N_ITERS = 10
 
 PHANTOM_NAMES = {
+    make_phantom1: "phantom_1",
     make_phantom2: "phantom_2",
+    BinaryGranularPhantom: "phantom_3",
     CircleWithGeoShapes: "phantom_4",
+
 }
 
 config = Config()
