@@ -8,13 +8,10 @@ from src.DART.Sinograms import PoissonNoise
 from src.PhantomGenerators.Phantom4 import CircleWithGeoShapes
 from src.PhantomGenerators.Phantom3 import BinaryGranularPhantom
 from src.PhantomGenerators.Phantom12 import make_phantom2, make_phantom1
-from src.PhantomGenerators.PhantomConfig import phantomConfig
 
-from typing import Callable
 from numpy.typing import NDArray
-from numpy.random import Generator
 
-
+# Experiment parameters
 INTERNAL_ARM_ITS = [1,3,5,10,20]
 N_PROJECTIONS = [10, 25]
 PHANTOMS = [make_phantom2, make_phantom1, BinaryGranularPhantom, CircleWithGeoShapes]
@@ -30,6 +27,8 @@ PHANTOM_NAMES = {
 config = Config()
 
 def Reconstruct(phantom: NDArray, cfg: Config):
+    """Container function for calling DART in the experiment"""
+
     _, results = DART(phantom=phantom, 
                       graylevels=np.array(cfg.gray_values),
                       p=cfg.p,
@@ -58,6 +57,7 @@ def RunInternalARM(dart_config: Config,
                   n_projections: list[int] = N_PROJECTIONS, 
                   phantoms=PHANTOMS) -> None:
 
+    """Sweeps over the smoothing values for all differnt phantoms and projections under noiseless conditions"""
     for internal_arm in internal_arm_its:
         dart_config.arm_iters = internal_arm
 

@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 from numpy.random import Generator
 
 from src.PhantomGenerators.PhantomConfig import phantomConfig
-from src.PhantomGenerators.PhantomGenerators import PlotPhantom 
+from Plotting.PlotPhantom import PlotPhantom 
 
 
 from skimage.draw import disk

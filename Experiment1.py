@@ -5,8 +5,9 @@ from Experiments.TestSARTRelaxation import RunRelaxation
 from Experiments.TestSmoothing import RunSmoothing
 from src.DART.DARTConfig import Config
 
+from Plotting.PlotExperiment1 import plot_all_experiments_combined
 
-import numpy as np
+"""Executes experiment 1 and plot the results. It stores the final figure under ./Results/Experiment_1"""
 
 EXPERIMENTS = {"Projection Ordering": RunAngleOrdering,
                "Smoothing": RunSmoothing,
@@ -20,6 +21,7 @@ for experiment in EXPERIMENTS:
     print(f"Starting experiment: {experiment}")
     EXPERIMENTS[experiment](dart_config=dart_cfg)
 
+plot_all_experiments_combined()
 
 
 

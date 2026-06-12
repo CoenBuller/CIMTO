@@ -8,13 +8,10 @@ from src.DART.Sinograms import PoissonNoise
 from src.PhantomGenerators.Phantom4 import CircleWithGeoShapes
 from src.PhantomGenerators.Phantom3 import BinaryGranularPhantom
 from src.PhantomGenerators.Phantom12 import make_phantom2, make_phantom1
-from src.PhantomGenerators.PhantomConfig import phantomConfig
 
-from typing import Callable
 from numpy.typing import NDArray
-from numpy.random import Generator
 
-
+# Experiment parameters
 SMOOTHING_VALUES = [None, 0.5, 1, 2, 3]
 SNR = [10, 20, 30]
 PHANTOMS = [make_phantom1, make_phantom2, BinaryGranularPhantom, CircleWithGeoShapes]
@@ -31,6 +28,8 @@ PHANTOM_NAMES = {
 config = Config()
 
 def Reconstruct(phantom: NDArray, cfg: Config):
+    """Container function for calling DART in the experiment"""
+
     _, results = DART(phantom=phantom, 
                       graylevels=np.array(cfg.gray_values),
                       p=cfg.p,
@@ -58,6 +57,8 @@ def RunSmoothing(
                   smoothing_values: list[float] = SMOOTHING_VALUES, 
                   snr: list[int] = SNR, 
                   phantoms=PHANTOMS) -> None:
+
+    """Sweeps over the smoothing values for all differnt phantoms and projections under noisy conditions"""
 
     for std in smoothing_values:
         # standard deviation for smoothing

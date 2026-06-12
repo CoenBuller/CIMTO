@@ -3,7 +3,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy.ndimage import gaussian_filter
 args = ParseArgs()
 phantom_path = os.path.join(f"TestPhantoms", f"phantom_{3}", f"{0}.npy")
 phantom = np.load(phantom_path)
@@ -89,7 +88,7 @@ ax[2].imshow(extra_smooth, cmap='viridis')
 ax[2].set_title(r"$t_{0}$=200")
 plt.tight_layout()
 plt.savefig("Comparet0_phantom1")
-# plt.show()
+
 
 fig, ax = plt.subplots(1, 3)
 ax[0].axis("off")
@@ -104,4 +103,3 @@ ax[2].imshow(smooth_reconstruction, cmap='gray')
 ax[2].set_title(r"$\sigma$=1")
 plt.tight_layout()
 plt.savefig("Comparet0_phantom1_2")
-# plt.show()

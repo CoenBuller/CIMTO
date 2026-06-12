@@ -8,13 +8,10 @@ from src.DART.Sinograms import PoissonNoise
 from src.PhantomGenerators.Phantom4 import CircleWithGeoShapes
 from src.PhantomGenerators.Phantom3 import BinaryGranularPhantom
 from src.PhantomGenerators.Phantom12 import make_phantom2, make_phantom1
-from src.PhantomGenerators.PhantomConfig import phantomConfig
 
-from typing import Callable
 from numpy.typing import NDArray
-from numpy.random import Generator
 
-
+# Experiment parameters
 ANGLE_ORDERINGS = ["sequential", "random", "interleaved"]
 N_PROJECTIONS = [10, 25]
 PHANTOMS = [make_phantom2, make_phantom1, BinaryGranularPhantom, CircleWithGeoShapes]
@@ -28,29 +25,10 @@ PHANTOM_NAMES = {
 }
 
 
-def GenerateAngles(cfg: Config) -> NDArray:
-    """Generate projection angles according to the chosen ordering strategy."""
-    start, stop = cfg.angle_range
-    n = cfg.n_angles
-    rng = np.random.default_rng(seed=cfg.seed)
-
-    if cfg.angle_order == "sequential":
-        return np.linspace(start, stop, n, endpoint=False)
-
-    elif cfg.angle_order == "random":
-        return np.sort(rng.uniform(start, stop, size=n))
-
-    elif cfg.angle_order == "maximally_separated":
-        # Golden-ratio sampling: each new angle maximally separates from previous
-        golden = np.pi * (3.0 - np.sqrt(5.0))
-        angles = (np.arange(n) * golden) % (stop - start) + start
-        return np.sort(angles)
-
-    else:
-        raise ValueError(f"Unknown angle_order: {cfg.angle_order}")
-
 
 def Reconstruct(phantom: NDArray, cfg: Config):
+    """Container function for calling DART in the experiment"""
+
     _, results = DART(
         phantom=phantom,
         graylevels=np.array(cfg.gray_values),
@@ -78,6 +56,7 @@ def RunAngleOrdering(
     phantoms=PHANTOMS,
 ) -> None:
 
+    """Sweeps over the smoothing values for all differnt phantoms and projections under noiseless conditions"""
     for ordering in angle_orderings:
         dart_config.angle_order = ordering
 

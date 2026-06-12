@@ -1,10 +1,6 @@
 import numpy as np
-import os
 
 from scipy.ndimage import maximum_filter, minimum_filter
-
-import time
-import matplotlib.pyplot as plt
 
 def EdgeDetection(phantom: np.ndarray) -> np.ndarray:
     """

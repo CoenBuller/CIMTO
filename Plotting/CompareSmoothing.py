@@ -1,13 +1,17 @@
-from src.DART.DART import DART, ParseArgs
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy.ndimage import gaussian_filter
+from src.DART.DART import DART, ParseArgs
+
+"""Makes 3 reconstructions using DART for a specified phantom class and instance under noise conditions with an SNR=20, and a different smoothing factor for each reconstruction
+(s.t. 0 -> 1 -> 3). Smoothing parameters can be changed if needed"""
+
 args = ParseArgs()
-phantom_path = os.path.join(f"TestPhantoms", f"phantom_{2}", f"{0}.npy")
+phantom_path = os.path.join(f"TestPhantoms", f"phantom_{args.type}", f"{args.instance}.npy")
 phantom = np.load(phantom_path)
 
+# First reconstruction, no smoothing
 reconstruction, results = DART(phantom=phantom,
                                 graylevels=np.unique(phantom),
                                 p=args.p,
@@ -30,6 +34,7 @@ reconstruction, results = DART(phantom=phantom,
                                 smoothing=None,
                                 verbal=args.verbal)
 
+# Second reconstruction, medium smoothing
 smooth_reconstruction, results = DART(phantom=phantom,
                                 graylevels=np.unique(phantom),
                                 p=args.p,
@@ -49,9 +54,10 @@ smooth_reconstruction, results = DART(phantom=phantom,
                                 
                                 SNR=20,
                                 
-                                smoothing=2,
+                                smoothing=1,
                                 verbal=args.verbal)
 
+# Thired reconstruction, heavy smoothing
 extra_smooth, results = DART(phantom=phantom,
                                 graylevels=np.unique(phantom),
                                 p=args.p,
@@ -75,7 +81,7 @@ extra_smooth, results = DART(phantom=phantom,
                                 verbal=args.verbal)
 
 
-
+# Plots all 3 reconstructions next to each other. It will plot it in two colormaps: viridis and gray.
 fig, ax = plt.subplots(1, 3)
 ax[0].axis("off")
 ax[1].axis("off")
@@ -88,8 +94,7 @@ ax[1].set_title(r"$\sigma$=1")
 ax[2].imshow(extra_smooth, cmap='viridis')
 ax[2].set_title(r"$\sigma$=3")
 plt.tight_layout()
-plt.savefig("CompareSmoothing_phantom1")
-# plt.show()
+plt.savefig(f"CompareSmoothing_phantom_{args.type}")
 
 fig, ax = plt.subplots(1, 3)
 ax[0].axis("off")
@@ -103,30 +108,5 @@ ax[1].set_title(r"$\sigma$=0")
 ax[2].imshow(smooth_reconstruction, cmap='gray')
 ax[2].set_title(r"$\sigma$=1")
 plt.tight_layout()
-plt.savefig("CompareSmoothing_phantom1_2")
+plt.savefig(f"CompareSmoothing_phantom_{args.type}_gray")
 
-
-# sigma controls the width of your kernel (higher = smoother/more blurred density)
-kernel_size = 3 
-
-# We apply the filter directly to the 2D images (no flattening!)
-filtered_reconstruction = np.zeros_like(reconstruction)
-filtered_reconstruction[reconstruction == np.max(phantom)] = 255
-recon_density = gaussian_filter(filtered_reconstruction, sigma=kernel_size)
-grad = np.gradient(recon_density)
-edge = np.sqrt(grad[0]**2 + grad[1]**2)
-
-# Plot as heatmaps
-im0 = ax[0].imshow(phantom, cmap='viridis')
-ax[0].set_title("Phantom Spatial Density")
-
-im1 = ax[1].imshow(filtered_reconstruction, cmap='viridis')
-ax[1].set_title(r"$\sigma$=0")
-
-im2 = ax[2].imshow(recon_density, cmap='viridis')
-ax[2].set_title(r"$\sigma$=1")
-
-# Add a colorbar to show the density scale
-fig.colorbar(im2, ax=ax.ravel().tolist(), shrink=0.6)
-
-plt.savefig("density")

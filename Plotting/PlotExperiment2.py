@@ -2,11 +2,10 @@ import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Dict, List, Tuple, Any
+from typing import List, Any
 
-# ============================================================================
-# GLOBAL PLOTTING PARAMETERS - Adjust these as needed
-# ============================================================================
+"""Plots main results of experiment 2; under noisy conditions."""
+
 # Font sizes
 TITLE_SIZE = 23          # Size for subplot titles
 SUPTITLE_SIZE = 16       # Size for overall figure super title
@@ -32,9 +31,7 @@ BAR_ALPHA = 1            # Transparency of bars
 # Image quality
 DPI = 300                # Resolution for saved figures
 
-# ============================================================================
-# Experiment configuration
-# ============================================================================
+
 BASE_RESULTS_DIR = "./Results"          # where Config.save_dir points to
 OUTPUT_DIR = os.path.join("Results", "Experiment_2")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -63,7 +60,6 @@ EXPERIMENTS = {
     },
 }
 
-# Only phantoms 2 and 4 (matching Experiment2)
 PHANTOMS = ["phantom_1", "phantom_2", "phantom_3", "phantom_4"]
 PHANTOM_NAMES ={"phantom_1": "Phantom (1)",
                 "phantom_2": 'Phantom (2)', 
@@ -71,9 +67,7 @@ PHANTOM_NAMES ={"phantom_1": "Phantom (1)",
                 "phantom_4": 'Phantom (4)'}
 N_ITERS = 10
 
-# ============================================================================
-# Helper: load results and return the LAST k_error value from each run
-# ============================================================================
+
 def load_results(exp_type: str, param_val: Any, snr: int, phantom: str) -> List[float]:
     exp_folder = EXPERIMENTS[exp_type]["folder_name"]
     param_str = "None" if param_val is None else str(param_val)
@@ -129,7 +123,7 @@ def plot_all_experiments_combined():
             if col == 0:
                 ax.set_ylabel(r"Final $k$-error", fontsize=AXIS_LABEL_SIZE)
             
-            ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
+            ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True)) # type: ignore
             ax.ticklabel_format(axis='y', style='scientific', scilimits=(4,4))
             
             # Set tick label sizes

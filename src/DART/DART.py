@@ -9,10 +9,10 @@ from numpy.typing import NDArray
 from typing import Callable
 from tqdm import tqdm
 from src.DART.Sinograms import Sinogram, ResidualSinogram, PoissonNoise
-from src.DART.ReconstructionAlgorithms import SART
-from src.DART.RoundTo import RoundTo, Smooth
+from src.DART.SART import SART
+from src.DART.SegmentAndSmooth import RoundTo, Smooth
 from src.DART.FreePixels import ChooseFreePixels
-from src.DART.EdgeDetector import EdgeDetection
+from src.DART.EdgeDetection import EdgeDetection
 
 
 
@@ -41,9 +41,10 @@ def DART(phantom: NDArray,
 
         ) -> tuple[NDArray, dict[str, list[float]]]:
     
-
+    # Will store results
     results = {"K_error" : [], "Abs_error": [], "time": 0}
 
+    # Original sinogram
     projector_id, sino_id, sinogram_img, vol_geom, proj_geom = Sinogram(
                                                                         phantom=phantom,
                                                                         n_detectors=n_detectors,
@@ -80,9 +81,9 @@ def DART(phantom: NDArray,
         print(f"Initial reconstruction took {(time.time() - time0):.3f}s, for {init_arm_iters} iterations")
         print("="*75, '\n')
     
-    i = 1
     with tqdm(total=dart_iters, desc="DART", unit="iter") as pbar:
 
+        # Bookkeeping 
         K_error = np.sum((reconstruction != phantom))
         abs_error = np.mean(abs(reconstruction - phantom))
         pbar.set_postfix(K=f"{K_error:.2f}",
@@ -91,6 +92,8 @@ def DART(phantom: NDArray,
 
         results["Abs_error"].append(abs_error)
         results["K_error"].append(K_error)
+
+        # Actual loop
         for i in range(dart_iters - 1):
 
             # Calculate residual sinogram b_res = b_0 - A(x_fixed)
@@ -132,9 +135,9 @@ def DART(phantom: NDArray,
             free_mask = ChooseFreePixels(reconstruction, p)
 
 
-            # Some metrics
+            # More bookkeeping
             K_error = np.sum((reconstruction != phantom)) # Number of wrong pixels
-            abs_error = np.mean(abs(reconstruction - phantom))
+            abs_error = np.mean(abs(reconstruction - phantom)) # Absolute error
             pbar.set_postfix(K=f"{K_error:.2f}",
                              abs_error=f"{abs_error}")
             pbar.update(1)
@@ -219,27 +222,24 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(1, 2)
     ax[0].axis("off")
     ax[1].axis("off")
-    # ax[2].axis("off")
 
     ax[0].imshow(reconstruction, cmap='viridis')
     ax[0].set_title("Reconstrction")
     ax[1].imshow(phantom, cmap='viridis')
     ax[1].set_title("Phantom")
-    # ax[2].imshow(phantom != reconstruction, cmap='viridis')
-    # ax[2].set_title("Difference image")
+
     plt.tight_layout()
     plt.savefig("DART_reconstruction")
     # plt.show()
 
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     ax.plot(range(len(results["K_error"])), results["K_error"], 
-            linewidth=3, color='#2E86AB', label='K-error')
+            linewidth=3, color="#2E86AB", label='K-error')
     ax.set_xlabel("Iterations", fontsize=18)
     ax.set_ylabel("K-error", fontsize=18)
     ax.grid(True, linestyle='--', alpha=0.6)
     ax.tick_params(axis='both', labelsize=18)
     ax.legend(loc='best', fontsize=18, framealpha=0.9)
-    # ax.set_yscale('log')  # often helpful for convergence plots
     plt.tight_layout()
     plt.savefig("convergence_plot", dpi=300, bbox_inches='tight') 
 

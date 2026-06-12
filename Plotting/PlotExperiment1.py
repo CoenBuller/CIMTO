@@ -2,8 +2,9 @@ import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Dict, List, Tuple, Any
+from typing import List, Any
 
+"""Plots the main results of experiment 1"""
 
 # Font sizes
 TITLE_SIZE = 30          # Size for subplot titles
@@ -192,9 +193,7 @@ def plot_all_experiments_combined():
     plt.savefig(save_path, dpi=DPI, bbox_inches='tight')
     print(f"Figure saved to {save_path}")
 
-# ============================================================================
-# Main function
-# ============================================================================
+
 def main():
     plot_all_experiments_combined()
 

@@ -8,13 +8,10 @@ from src.DART.Sinograms import PoissonNoise
 from src.PhantomGenerators.Phantom4 import CircleWithGeoShapes
 from src.PhantomGenerators.Phantom3 import BinaryGranularPhantom
 from src.PhantomGenerators.Phantom12 import make_phantom2, make_phantom1
-from src.PhantomGenerators.PhantomConfig import phantomConfig
 
-from typing import Callable
 from numpy.typing import NDArray
-from numpy.random import Generator
 
-
+# Experiment parameters
 RELAXATION_VALUES = [0.1, 0.5, 1.0, 1.5, 2.0]
 SNR = [10, 20, 30]
 PHANTOMS = [make_phantom1, make_phantom2, BinaryGranularPhantom, CircleWithGeoShapes]
@@ -30,6 +27,8 @@ PHANTOM_NAMES = {
 
 
 def Reconstruct(phantom: NDArray, cfg: Config):
+    """Container function for calling DART in the experiment"""
+
     _, results = DART(
         phantom=phantom,
         graylevels=np.array(cfg.gray_values),
@@ -56,6 +55,8 @@ def RunRelaxation(
     snr: list[int] = SNR,
     phantoms=PHANTOMS,
 ) -> None:
+
+    """Sweeps over the relaxation factor values for all differnt phantoms and projections under noisy conditions"""
 
     for lam in relaxation_values:
         # Relaxation factor

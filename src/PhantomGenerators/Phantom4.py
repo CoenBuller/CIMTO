@@ -7,7 +7,7 @@ from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from skimage.draw import disk, random_shapes
 from skimage.measure import label
-from src.PhantomGenerators.PhantomGenerators import PlotPhantom 
+from Plotting.PlotPhantom import PlotPhantom 
 
 
 ############################################# Circle With Geo Shapes #############################################
