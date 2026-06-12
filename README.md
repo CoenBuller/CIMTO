@@ -1,49 +1,65 @@
 # An Empirical Study of Hyperparameter Sensitivity in the Discrete Algebraic Reconstruction Technique
+
 ## Requirements
+
 - Python 3.12
+
 Verify your Python version:
+
 ```bash
 python --version
 ```
+
 or
+
 ```bash
 python3 --version
 ```
+
 The output should show Python 3.12.x.
+
 ## Setup
 ### 1. Create a virtual environment
 ```bash
 python3.12 -m venv .venv
 ```
+
 ### 2. Activate the virtual environment
 #### Linux / macOS
 ```bash
 source .venv/bin/activate
 ```
+
 #### Windows (Command Prompt)
 ```cmd
 .venv\Scripts\activate.bat
 ```
+
 #### Windows (PowerShell)
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
+
 ### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
+
 ### 4. Run & Plot Experiment 1
 ```bash
 python -m Experiment1
 ```
+
 results should be saved under *./Results/Experiment_1*, there an image can be found. If it is not found there try the following command: 
 ```bash
 python -m Plotting.PlotExperiment1
 ```
+
 ### 5. Run & Plot Experiment 2
 ```bash
 python -m Experiment2
 ```
+
 results should be saved under *./Results/Experiment_2*, there an image can be found. If it is not found there try the following command: 
 ```bash
 python -m Plotting.PlotExperiment2
