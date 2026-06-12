@@ -63,7 +63,6 @@ def Sinogram(phantom: np.ndarray,
             beam_type: str='parallel',
             SNR: int | None=None, 
             noise_func: Callable=PoissonNoise,
-            save_dir: str | None=None, 
             n_projections: int = 0,
             use_gpu: bool=False):
         
@@ -88,9 +87,6 @@ def Sinogram(phantom: np.ndarray,
         the mean photon count I0. Higher values produce higher signal‑to‑noise ratio.
         Medium amount of noise added is done by setting I0 = 10e3
         Default is None (no noise added).
-    save_dir : str or None, optional
-        Directory path where individual projection images will be saved.
-        If provided and does not exist, it will be created. Default is None.
     n_projections : int or None, optional
         Number of projections (used only when saving images to name the files).
         If `save_dir` is provided, this should be the length of the `angles` array.
@@ -150,16 +146,6 @@ def Sinogram(phantom: np.ndarray,
     if SNR is not None:
         sinogram_noisy = noise_func(sinogram, SNR)
         sino_id = astra.data2d.create('-sino', proj_geom, sinogram_noisy)
-    
-    # Save projections as images, if directory has been defined.
-    if save_dir != None:
-        if save_dir[-1] != '/':
-            save_dir += '/'
-        if not isdir(save_dir):
-            mkdir(save_dir)
-        proj_for_img = np.round(sinogram * (2**8- 1)).astype(np.uint8)
-        for i in range(n_projections):
-            Image.fromarray(proj_for_img[i]).save(save_dir+f'proj_{i}.png')
     
     astra.data2d.delete(phantom_id)
 
