@@ -19,7 +19,7 @@ PHANTOM_NAMES = {
 }
 
 def CreatePhantoms(phantom_cfg: phantomConfig, rng: Generator):
-
+    """Loops over all phantom classes and generates 10 instances of each class"""
     for phantom_gen in PHANTOMS:
         save_dir = os.path.join(phantom_cfg.save_dir, PHANTOM_NAMES[phantom_gen])
         os.makedirs(save_dir, exist_ok=True)
