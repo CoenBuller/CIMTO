@@ -1,6 +1,6 @@
-from src.PhantomGenerators.GeoPhantoms import CircleWithGeoShapes
-from src.PhantomGenerators.GranularPhantoms import BinaryGranularPhantom
-from src.PhantomGenerators.ConcavePhantoms import make_phantom2, make_phantom1
+from src.PhantomGenerators.Phantom4 import CircleWithGeoShapes
+from src.PhantomGenerators.Phantom3 import BinaryGranularPhantom
+from src.PhantomGenerators.Phantom12 import make_phantom2, make_phantom1
 from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from numpy.random import Generator

@@ -5,9 +5,9 @@ import numpy as np
 from src.DART.DART import DART
 from src.DART.DARTConfig import Config
 from src.DART.Sinograms import PoissonNoise
-from src.PhantomGenerators.GeoPhantoms import CircleWithGeoShapes
-from src.PhantomGenerators.GranularPhantoms import BinaryGranularPhantom
-from src.PhantomGenerators.ConcavePhantoms import make_phantom2, make_phantom1
+from src.PhantomGenerators.Phantom4 import CircleWithGeoShapes
+from src.PhantomGenerators.Phantom3 import BinaryGranularPhantom
+from src.PhantomGenerators.Phantom12 import make_phantom2, make_phantom1
 from src.PhantomGenerators.PhantomConfig import phantomConfig
 
 from typing import Callable
@@ -30,6 +30,7 @@ PHANTOM_NAMES = {
 config = Config()
 
 def Reconstruct(phantom: NDArray, cfg: Config):
+    """Container function for calling DART in the experiment"""
     _, results = DART(phantom=phantom, 
                       graylevels=np.array(cfg.gray_values),
                       p=cfg.p,
@@ -57,7 +58,9 @@ def RunSmoothing(
                   smoothing_values: list[float] = SMOOTHING_VALUES, 
                   n_projections: list[int] = N_PROJECTIONS, 
                   phantoms=PHANTOMS) -> None:
+    
 
+    """Sweeps over the smoothing values for all differnt phantoms and projections under noiseless conditions"""
     for std in smoothing_values:
         dart_config.sigma = std  
 
