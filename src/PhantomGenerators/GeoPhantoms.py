@@ -1,7 +1,5 @@
 import argparse
-
 import numpy as np
-import matplotlib.pyplot as plt
 
 from numpy.typing import NDArray
 from numpy.random import Generator
@@ -14,7 +12,7 @@ from src.PhantomGenerators.PhantomGenerators import PlotPhantom
 
 ############################################# Circle With Geo Shapes #############################################
  
-def CircleWithGeoShapes(cfg: phantomConfig, rng: Generator):
+def CircleWithGeoShapes(cfg: phantomConfig, rng: Generator) -> NDArray:
     gray_values = cfg.gray_values
     img = np.zeros(cfg.img_shape)
 

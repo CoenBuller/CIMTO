@@ -1,8 +1,8 @@
+""""Can be used to plot a specific phantom"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
-
-from src.DART.RoundTo import Smooth
 
 
 parser = argparse.ArgumentParser()

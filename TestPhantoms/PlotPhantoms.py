@@ -1,3 +1,6 @@
+"""Plots the first instance of eah phantom class side by side (Fig 2.)"""
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os

@@ -1,6 +1,9 @@
 import astra
 import numpy as np
+import matplotlib.pyplot as plt
+
 from typing import Any
+from src.DART.Sinograms import Sinogram
 
 def _projection_order_list(n_angles: int, method: str) -> list:
     """Return a list of projection indices for the given order method."""
@@ -35,14 +38,10 @@ def SART(sino_id: int,
          mask=None,
          projection_order: str = 'random',
          use_gpu: bool = False,
-         proj_geom: dict = None) -> np.ndarray: # Added proj_geom parameter
+         proj_geom: dict | None = None) -> np.ndarray:
 
     rec_type = "SART_CUDA" if use_gpu else "SART"
     
-    # ------------------------------------------------------------------------
-    # WORKAROUND: Handle custom ordering by manually rearranging the geometry 
-    # and sinogram before passing them to ASTRA
-    # ------------------------------------------------------------------------
     local_sino_id = sino_id
     local_projector_id = projector_id
     allocated_local_sino = False
@@ -81,9 +80,6 @@ def SART(sino_id: int,
     else:
         actual_projection_order = projection_order
 
-    # ------------------------------------------------------------------------
-    # Baseline SART Allocation Engine
-    # ------------------------------------------------------------------------
     rec_id = astra.data2d.create("-vol", vol_geom, data=vol_data)
 
     alg_cfg: dict[str, Any] = astra.astra_dict(rec_type)
@@ -147,7 +143,7 @@ def SIRT(sino_id: int,
     alg_cfg["ReconstructionDataId"] = rec_id
 
     if mask is None:
-        mask = np.ones((vol_geom['GridRowCount'], vol_geom['GridColCount']))
+        mask = np.ones((vol_geom['GridRowCount'], vol_geom['GridColCount'])) #type: ignore
     mask_id = astra.data2d.create('-vol', vol_geom, mask)
     alg_cfg['option'] = {
         'ReconstructionMaskId': mask_id,
@@ -192,3 +188,32 @@ def FBP(vol_geom: dict[str, dict],
     astra.algorithm.delete(algorithm_id)
     astra.data2d.delete(sino_id)
     return rec_id, rec
+
+if __name__ == "__main__":
+    phantom = np.load("TestPhantoms/phantom_1/0.npy")
+    projector_id, sino_id, sinogram_img, vol_geom, proj_geom = Sinogram(
+                                                                        phantom=phantom,
+                                                                        n_detectors=512,
+                                                                        angles=np.linspace(0, np.pi, 25),
+                                                                        detector_spacing=1,
+                                                                        SNR=None,
+                                                                        )
+
+
+    reconstruction = SART(
+                          sino_id=sino_id,
+                          vol_geom=vol_geom, 
+                          vol_data=0, 
+                          projector_id=projector_id,
+                          iters=50,
+                          relaxation=1,
+                          projection_order="random",
+                          min_constraint=np.min(0),
+                          max_constraint=np.max(255),
+                          use_gpu=False,
+                          proj_geom=proj_geom,
+                          )
+    
+    plt.imshow(reconstruction)
+    plt.axis("off")
+    plt.savefig("SART_reconstruction")

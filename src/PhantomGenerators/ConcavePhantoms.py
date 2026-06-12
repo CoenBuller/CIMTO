@@ -191,7 +191,7 @@ def make_phantom2(cfg, rng, inner_erode_1=INNER_ERODE_1,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Plot Geo Phantoms", description="Creating geometrical phantoms which will be used for the performance measuring of DART on different gray value levels")
     parser.add_argument('-seed', const=None)
-    parser.add_argument('-type', choices=['2', '7'])
+    parser.add_argument('-type', choices=['1', '2'])
     parser.add_argument('-jagged', action='store_true',
                         help="Use non-convex sub-shapes and boundary perturbation for a rougher edge")
     args = parser.parse_args()
@@ -200,10 +200,10 @@ if __name__ == "__main__":
     cfg = phantomConfig()
     rng = np.random.default_rng(seed=args.seed)
 
-    if args.type == '2':
+    if args.type == '1':
         img = make_phantom1(cfg, n_blobs=N_BLOBS, min_r=MIN_RADIUS, max_r=MAX_RADIUS,
                             n_verts=N_VERTS, rng=rng, jagged=args.jagged)
-    elif args.type == '7':
+    elif args.type == '2':
         img = make_phantom2(cfg, rng, inner_erode_1=INNER_ERODE_1, inner_erode_2=INNER_ERODE_2)
     else:
         img = make_phantom1(cfg, n_blobs=N_BLOBS, min_r=MIN_RADIUS, max_r=MAX_RADIUS,
