@@ -128,8 +128,8 @@ def DART(phantom: NDArray,
             # Smooth the reconstruction
             if smoothing:
                 reconstruction = Smooth(reconstruction, sigma=smoothing, free_mask=free_mask)
-            
             continuous_reconstruction = reconstruction.copy()
+
             # Segment pixel values of reconstruction and determine new set of free pixels
             reconstruction = RoundTo(reconstruction, graylevels)
             free_mask = ChooseFreePixels(reconstruction, p)
@@ -182,6 +182,8 @@ def ParseArgs():
     return args
 
 if __name__ == "__main__":
+    """Can be used to run a single instance of the DART algorithm with custom parameter settings through the ArgsParser"""
+
     noise_funcs = {'poisson': PoissonNoise,}
     args = ParseArgs()
     phantom_path = os.path.join(f"TestPhantoms", f"phantom_{args.type}", f"{args.instance}.npy")
