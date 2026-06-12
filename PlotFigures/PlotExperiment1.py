@@ -4,9 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Dict, List, Tuple, Any
 
-# ============================================================================
-# GLOBAL PLOTTING PARAMETERS - Adjust these as needed
-# ============================================================================
+
 # Font sizes
 TITLE_SIZE = 30          # Size for subplot titles
 AXIS_LABEL_SIZE = 30     # Size for x and y axis labels
@@ -32,9 +30,7 @@ BAR_ALPHA = 1            # Transparency of bars
 # Image quality
 DPI = 300                # Resolution for saved figures
 
-# ============================================================================
-# Experiment configuration
-# ============================================================================
+
 BASE_RESULTS_DIR = "./Results"          # where Config.save_dir points to
 OUTPUT_DIR = os.path.join("Results", "Experiment_1")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -75,9 +71,7 @@ PHANTOM_NAMES ={"phantom_1": 'Phantom (1)',
 PROJECTIONS = [10, 25]
 N_ITERS = 10
 
-# ============================================================================
-# Helper: load results and return the LAST k_error value from each run
-# ============================================================================
+
 def load_results(exp_type: str, param_val: Any, n_proj: int, phantom: str) -> List[float]:
     param_str = "None" if param_val is None else str(param_val)
     folder = os.path.join(BASE_RESULTS_DIR, exp_type, param_str, f"projections_{n_proj}")
@@ -100,9 +94,7 @@ def load_results(exp_type: str, param_val: Any, n_proj: int, phantom: str) -> Li
     
     return final_k_errors
 
-# ============================================================================
-# Plot all experiments in one large figure
-# ============================================================================
+
 def plot_all_experiments_combined():
     n_experiments = len(EXPERIMENTS)
     fig, axes = plt.subplots(n_experiments, 2, 

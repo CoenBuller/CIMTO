@@ -104,7 +104,8 @@ ax[2].imshow(smooth_reconstruction, cmap='gray')
 ax[2].set_title(r"$\sigma$=1")
 plt.tight_layout()
 plt.savefig("CompareSmoothing_phantom1_2")
-# plt.show()
+
+
 # sigma controls the width of your kernel (higher = smoother/more blurred density)
 kernel_size = 3 
 

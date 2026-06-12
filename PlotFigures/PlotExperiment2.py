@@ -35,8 +35,8 @@ DPI = 300                # Resolution for saved figures
 # ============================================================================
 # Experiment configuration
 # ============================================================================
-BASE_RESULTS_DIR = "./Results2"          # where Config.save_dir points to
-OUTPUT_DIR = os.path.join("Results2", "Experiment_2")
+BASE_RESULTS_DIR = "./Results"          # where Config.save_dir points to
+OUTPUT_DIR = os.path.join("Results", "Experiment_2")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # SNR values used in Experiment2
@@ -96,9 +96,7 @@ def load_results(exp_type: str, param_val: Any, snr: int, phantom: str) -> List[
             final_k_errors.append(k_error_list[-1])
     return final_k_errors
 
-# ============================================================================
-# Plot all experiments in one large figure
-# ============================================================================
+
 def plot_all_experiments_combined():
     n_experiments = len(EXPERIMENTS)
     fig, axes = plt.subplots(n_experiments, 3, 
@@ -196,9 +194,7 @@ def plot_all_experiments_combined():
     plt.savefig(save_path, dpi=DPI, bbox_inches='tight')
     print(f"Figure saved to {save_path}")
 
-# ============================================================================
-# Main function
-# ============================================================================
+
 def main():
     plot_all_experiments_combined()
 

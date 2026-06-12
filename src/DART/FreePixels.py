@@ -32,20 +32,3 @@ def ChooseFreePixels(phantom: np.ndarray, p: float) -> np.ndarray:
     return free_pixel_mask
 
 
-if __name__ == "__main__":
-    phantom_path = os.path.join("Test_phantoms", "multiple_shapes_and_graylevels.npz")
-    phantom_arrays = np.load(phantom_path)
-    lst = phantom_arrays.files
-    item = lst[0]
-    phantom = phantom_arrays[item]
-
-    time0 = time.time()
-    edges = ChooseFreePixels(phantom=phantom, p=0.01)
-    print(f"Free detection took {(time.time() - time0):.3f}s")
-
-    fig, ax = plt.subplots(1, 2)
-    ax[0].imshow(phantom)
-    ax[1].imshow(edges)
-    ax[0].set_title("Originall phantom")
-    ax[1].set_title("Free pixels")
-    plt.show()
