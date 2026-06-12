@@ -8,7 +8,8 @@ from typing import Any, Callable
 
 @dataclass 
 class Config:
-
+    # Default DART parameters
+    
     # Outer loop params
     gray_values: tuple[Any, ...] = (0., 72.5, 145., 222.5, 255.)
     p: float = 0.85 # Must be in [0, 1]

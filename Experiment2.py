@@ -5,7 +5,7 @@ from src.DART.DARTConfig import Config
 
 from Plotting.PlotExperiment2 import plot_all_experiments_combined
 
-"""Executes experiment 1 and plot the results. It stores the final figure under ./Results/Experiment_2"""
+"""Executes experiment 1 and plot the results. It stores the final figure under ./Results/Experiment_2. Parameters are varied are shown in individual experiment files."""
 
 EXPERIMENTS = {"Internal ARM": RunInternalARM,
                "Smoothing": RunSmoothing,
