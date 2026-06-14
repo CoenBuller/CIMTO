@@ -12,7 +12,7 @@ def _projection_order_list(n_angles: int, method: str) -> list:
     n_angles : int
         Total number of projection angles.
     method : str
-        'interleaved' – bisection-based ordering that maximises angular
+        'maximally seperated' – bisection-based ordering that maximises angular
         separation between consecutive projections (analogous to the
         "maximally separated" scheme).  At each level of the bisection tree,
         the midpoint of every active sub-interval is visited before any child
@@ -24,7 +24,7 @@ def _projection_order_list(n_angles: int, method: str) -> list:
     order : list[int]
         Permutation of projection indices in the desired visit order.
     """
-    if method == 'interleaved':
+    if method == 'maximally seperated':
         order, seen, queue = [], set(), [(0, n_angles - 1)]
         while len(order) < n_angles:
             next_queue = []
@@ -42,7 +42,7 @@ def _projection_order_list(n_angles: int, method: str) -> list:
         return order
     else:
         raise ValueError(f"Unknown projection_order '{method}'. "
-                         f"Choose from: 'random', 'sequential', 'interleaved'.")
+                         f"Choose from: 'random', 'sequential', 'maximally seperated'.")
 
 def SART(sino_id: int,
          vol_geom: dict,

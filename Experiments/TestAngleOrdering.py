@@ -12,7 +12,7 @@ from src.PhantomGenerators.Phantom12 import make_phantom2, make_phantom1
 from numpy.typing import NDArray
 
 # Experiment parameters
-ANGLE_ORDERINGS = ["sequential", "random", "interleaved"]
+ANGLE_ORDERINGS = ["maximally seperated", "sequential", "random", ]
 N_PROJECTIONS = [10, 25]
 PHANTOMS = [make_phantom2, make_phantom1, BinaryGranularPhantom, CircleWithGeoShapes]
 N_ITERS = 10

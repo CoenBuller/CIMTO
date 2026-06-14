@@ -17,5 +17,6 @@ for i in range(1, 5):
     ax[i-1].xaxis.set_visible(False)
     ax[i-1].yaxis.set_visible(False)
     ax[i-1].set_title(f"Phantom ({i})", fontsize=22)
+
 plt.subplots_adjust(bottom=0.1,wspace=0.01,hspace=0.4)
 plt.savefig("phantoms")
