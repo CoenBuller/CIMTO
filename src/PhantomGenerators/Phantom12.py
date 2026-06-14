@@ -30,7 +30,7 @@ ERODE_R     = 8            # light erosion after dilation (optional cleanup)
 INNER_ERODE_1 = 40         # erode this much to get mid-grey boundary
 INNER_ERODE_2 = 80         # erode this much more to get white interior
 
-# Boundary perturbation (jagged edges)
+# Boundary perturbation
 N_PERTURB     = 80         # number of perturbation spots along the boundary
 PERTURB_R_MIN = 4          # min radius of each perturbation disk (pixels)
 PERTURB_R_MAX = 40         # max radius of each perturbation disk (pixels)
@@ -170,7 +170,6 @@ def make_phantom2(cfg, rng, inner_erode_1=INNER_ERODE_1,
       - background  :   0
       - outer shell : 127
       - inner core  : 255
-    The shells are produced by successive erosions of the binary mask.
     """
 
     img, mask = make_phantom1(cfg, n_blobs=N_BLOBS, min_r=MIN_RADIUS, max_r=MAX_RADIUS,
